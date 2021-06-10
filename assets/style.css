@@ -1,0 +1,13 @@
+body{
+	height: 2524px;
+	width: 767px;
+}
+
+footer{
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	background: grey;
+	/* padding-top: 20px; */
+}
