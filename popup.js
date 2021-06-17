@@ -1,4 +1,5 @@
 var console = chrome.extension.getBackgroundPage().console;
+var saveConfig = chrome.extension.getBackgroundPage().saveConfig;
 
 var app = {
 	init: function() {
@@ -9,11 +10,12 @@ var app = {
 	},
 
 	browseWrite: function(){
-		console.log("clicked browse");
 	},
 
 	browseSave: function(){
-
+		chrome.runtime.sendMessage({fn: "saveConfig", data: "item"}, function(response){
+			console.log(response);
+		});
 	}
 };
 

@@ -1,20 +1,21 @@
 {
   "manifest_version": 2,
-  "name": "Sample",
-  "version": "1.0.0",
-  "permissions": [
-    "activeTab"
-  ],
-
-  "background":{
-    "scripts": [
-      "config.js",
-      "background.js"
-    ]
-  },
+  "name": "Easify",
+  "version": "0.0.4",
 
   "browser_action": {
     "default_popup": "popup.html",
     "default_icon": "assets/128.png"
-  }
+  },
+
+  "background":{
+    "scripts": [
+      "background.js"
+    ]
+  },
+
+  "permissions": [
+    "activeTab",
+    "storage"
+  ]
 }
