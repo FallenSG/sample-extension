@@ -1,16 +1,22 @@
 var devTab = {
-  init: function(links){
+  browserWindow: {},
+
+  tabCreation: function(links){
     for(const key in links){
       chrome.windows.create({url: links[key][0], incognito: true}, function(windows){
         for(let i=1;i<links[key].length;i++){
           chrome.tabs.create({url: links[key][i], windowId: windows.id});
         }
 
-        links[windows.id] = key;
+        browserWindow[windows.id] = key;
       });
     }
-    console.log(links);
-    chrome.runtime.sendMessage({fn: "browseLinks", links: links});
+  },
+
+  promisifiedTabCreation: function(){
+    setTimeout(function () {
+      resolve(tabCreation);
+    }, 1500);
   },
 
   saveLinks: function(openedLink){
@@ -19,6 +25,10 @@ var devTab = {
         console.log(windows);
       })
     }
+  },
+
+  init: async function(){
+
   }
 }
 
