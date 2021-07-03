@@ -4,8 +4,12 @@
 // simply add the data in json format to the project folder
 // and here you simply pass the name of the file
 
-// Note: You also need to add the script name in the manifest.json
-// before background.js
+//How to use -
+// dataSetter('file_name_here_with_path') to set the json file
+// content in browser local storage
+// dataViewer('key_name') to fetch the data from browser local
+//storage and checking values of that key.
+
 
 function dataSetter(file){
   var configFile = {};
@@ -34,4 +38,5 @@ function dataViewer(insights){
   });
 }
 
-dataSetter('/new_config.json');
+// dataSetter('/config.json');
+// dataViewer('links');

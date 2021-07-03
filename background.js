@@ -1,5 +1,6 @@
 var background = {
 	config: {},
+	openedLink: {},
 
 	init: function(){
 		this.loadConfig();
@@ -17,16 +18,25 @@ var background = {
 		});
 	},
 
-	saveConfig: function(request, sender, sendResponse) {
+	browseLinks: function(request, sender, sendResponse){
+		background.openedLink = request.links;
+	},
+
+	saveLinks: function(request, sender, sendResponse) {
 		// chrome.storage.local.set(updatedConfig, function(){
 		//   console.log(updatedConfig);
 		// });
+		devTab.saveLinks(background.openedLink);
 		console.log("data reached saveConfig ", request);
 		sendResponse({message: "Data has arrived"});
 	},
 
 	getLinks: function(request, sender, sendResponse){
 		sendResponse(config.links);
+	},
+
+	tabCreation: function(request, sender, sendResponse){
+		devTab.init(request.links);
 	}
 }
 
