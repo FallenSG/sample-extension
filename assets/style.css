@@ -9,5 +9,11 @@ footer{
 	left: 0;
 	width: 100%;
 	background: grey;
+	text-align: center;
 	/* padding-top: 20px; */
+}
+
+input[type='checkbox']{
+	position: relative;
+	left: 95%;
 }

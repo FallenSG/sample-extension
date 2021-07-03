@@ -27,6 +27,13 @@ function dataSetter(file){
   xhr.send();
 }
 
+
+function promisifiedDataSetter(file){
+    setTimeout(function () {
+      resolve(dataSetter);
+    }, timeOut);
+}
+
 function dataViewer(insights){
   chrome.storage.local.get([insights], function(items) {
     var msg = {text:"Data Fetch Completed.. ", dataVal: items};
@@ -34,4 +41,9 @@ function dataViewer(insights){
   });
 }
 
-dataSetter('/new_config.json');
+async function init() {
+  await promisifiedDataSetter("/config.json");
+  dataViewer('links');
+}
+// dataSetter('/config.json');
+// dataViewer('links');
