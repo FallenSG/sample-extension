@@ -1,7 +1,5 @@
 var devTab = {
-  browserWindow: {},
-
-  tabCreation: function(links){
+  init: function(links){
     for(const key in links){
       chrome.windows.create({url: links[key][0], incognito: true}, function(windows){
         for(let i=1;i<links[key].length;i++){
