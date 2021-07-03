@@ -11,12 +11,8 @@ var devTab = {
         browserWindow[windows.id] = key;
       });
     }
-  },
-
-  promisifiedTabCreation: function(){
-    setTimeout(function () {
-      resolve(tabCreation);
-    }, 1500);
+    console.log(links);
+    chrome.runtime.sendMessage({fn: "browseLinks", links: links});
   },
 
   saveLinks: function(openedLink){
@@ -25,10 +21,6 @@ var devTab = {
         console.log(windows);
       })
     }
-  },
-
-  init: async function(){
-
   }
 }
 
