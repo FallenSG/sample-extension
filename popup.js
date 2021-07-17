@@ -3,7 +3,7 @@ var console = chrome.extension.getBackgroundPage().console;
 var popup = {
   init: function(){
     chrome.runtime.sendMessage({fn: "getLinks"}, function(response){
-      if(response) popup.displayLinks(response);
+      if(response.links) popup.displayLinks(response.links);
       else document.getElementById('container').innerHTML = "Getting Started";
     });
   },
@@ -70,10 +70,8 @@ var popup = {
     chrome.runtime.sendMessage({fn: "tabCreation", links:links});
   },
 
-	saveLinks: function(){
-		chrome.runtime.sendMessage({fn: "saveLinks"}, function(response){
-			console.log(response);
-		});
+	initSaveLinks: function(){
+		chrome.runtime.sendMessage({fn: "saveLinks"});
 	}
 };
 
@@ -81,4 +79,4 @@ var popup = {
 document.addEventListener('DOMContentLoaded', popup.init);
 document.addEventListener('click', popup.checkSelector);
 document.getElementById('browse').addEventListener('click', popup.initTabCreation);
-document.getElementById('save').addEventListener('click', popup.saveLinks);
+document.getElementById('save').addEventListener('click', popup.initSaveLinks);

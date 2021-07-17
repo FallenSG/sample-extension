@@ -1,46 +1,67 @@
+function randomWordGenerator(){
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  for(let i=0;i<(Math.random()*10)+5;i++){
+    text += possible. charAt(Math. floor(Math. random() * possible. length));
+  }
+
+  return text;
+}
+
 var devTab = {
-  init: function(links){
+  browseWindow: {},
+  sampleVar: {},
+
+
+  tabCreation: function(links){
     for(const key in links){
       chrome.windows.create({url: links[key][0], incognito: true}, function(windows){
         for(let i=1;i<links[key].length;i++){
           chrome.tabs.create({url: links[key][i], windowId: windows.id});
         }
 
-        browserWindow[windows.id] = key;
+        devTab.browseWindow[windows.id] = key;
       });
     }
-    console.log(links);
-    chrome.runtime.sendMessage({fn: "browseLinks", links: links});
   },
 
-  saveLinks: function(openedLink){
-    for(const key in openedLink){
-      chrome.windows.get({windowId: key}, function(windows){
-        console.log(windows);
-      })
-    }
+  promisifedTabCreation: function(links){
+    return new Promise((resolve, reject) => {
+      setTimeout(function (currentLinks) {
+        resolve(devTab.tabCreation(currentLinks));
+      }, 1500, links);
+    });
+  },
+
+  saveLinks: function(data){
+    chrome.windows.getAll({populate: true}, function(windows_list){
+      windows_list.forEach((window) => {
+        if(window.incognito){
+          devTab.sampleVar[window.id] = {};
+          window.tabs.forEach((tab) => {
+            devTab.sampleVar[window.id][tab.title] = tab.url;
+          });
+        }
+      });
+      devTab.settingData(data.links);
+    });
+  },
+
+  settingData: function(links){
+      for(key in this.sampleVar){
+        if(key in this.browseWindow){
+          links[this.browseWindow[key]] = this.sampleVar[key];
+        } else{
+          links[randomWordGenerator()] = this.sampleVar[key];
+        }
+      }
+
+      chrome.storage.local.set({'links': links});
+  },
+
+  init: async function(links){
+    await devTab.promisifedTabCreation(links);
+    console.log("after opening links browseWindow", this.browseWindow);
   }
 }
-
-
-//   // chrome.windows.getAll({populate: false, windowTypes: ['normal']}, function(windowList) {
-//   //   for (let windows of windowList) {
-//   //       if (windows.incognito === isIncognito) {
-//   //           // Use this window.
-//   //           for(let url in links["7"]){
-//   //             console.log(url);
-//   //           }
-//   //           chrome.tabs.create({url: link, windowId: windows.id});
-//   //           return;
-//   //       }
-//   //   }
-//   //
-//   //   // No incognito window found, open a new one.
-//   //   chrome.windows.create({url: link, incognito: isIncognito});
-//   // });
-// }
-//
-// function closeSave(){
-//
-// }
-// chrome.storage.local.get(["links"], (items) => { createTab(items.links, true) });

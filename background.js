@@ -1,9 +1,10 @@
 var background = {
 	config: {},
-	openedLink: {},
+	links: {},
 
 	init: function(){
 		this.loadConfig();
+		setInterval(this.fetchLinks, 5000);
 
 		chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 			if(request.fn in background){
@@ -13,26 +14,27 @@ var background = {
 	},
 
 	loadConfig: function(){
-		chrome.storage.local.get(["links"], function(items){
+		chrome.storage.local.get(["config"], function(items){
 		  this.config = items;
 		});
 	},
 
-	browseLinks: function(request, sender, sendResponse){
-		background.openedLink = request.links;
-	},
-
-	saveLinks: function(request, sender, sendResponse) {
-		// chrome.storage.local.set(updatedConfig, function(){
-		//   console.log(updatedConfig);
-		// });
-		devTab.saveLinks(background.openedLink);
-		console.log("data reached saveConfig ", request);
-		sendResponse({message: "Data has arrived"});
+	fetchLinks: function(){
+		chrome.storage.local.get(['links'], function(items){
+			background.links = items;
+		});
 	},
 
 	getLinks: function(request, sender, sendResponse){
-		sendResponse(config.links);
+		sendResponse(background.links);
+	},
+
+  setLinks: function(request, sender, sendResponse){
+    console.log("setLinks in background", request);
+  },
+
+	saveLinks: async function(request, sender, sendResponse) {
+		devTab.saveLinks(this.links);
 	},
 
 	tabCreation: function(request, sender, sendResponse){
