@@ -1,17 +1,21 @@
+var console = chrome.extension.getBackgroundPage().console;
+
 function randomWordGenerator(){
+  //callStack: settingData(devTab.js)
+  //Purpose: to creates random word from 'possible' within the range of 5-15.
+
   var text = "";
   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
   for(let i=0;i<(Math.random()*10)+5;i++){
     text += possible. charAt(Math. floor(Math. random() * possible. length));
   }
-
   return text;
 }
 
 var devTab = {
   browseWindow: {},
-  sampleVar: {},
+  sampleVar: {}, //has been made redundant after making change to code.
 
 
   tabCreation: function(links){
@@ -26,25 +30,27 @@ var devTab = {
     }
   },
 
-  promisifedTabCreation: function(links){
-    return new Promise((resolve, reject) => {
-      setTimeout(function (currentLinks) {
-        resolve(devTab.tabCreation(currentLinks));
-      }, 1500, links);
-    });
-  },
-
-  saveLinks: function(data){
+  saveLinks: function(links){
     chrome.windows.getAll({populate: true}, function(windows_list){
-      windows_list.forEach((window) => {
+      windows_list.forEach(function(window){
+
         if(window.incognito){
-          devTab.sampleVar[window.id] = {};
-          window.tabs.forEach((tab) => {
-            devTab.sampleVar[window.id][tab.title] = tab.url;
+          let key = window.id;
+
+          if(key in devTab.browseWindow) key = devTab.browseWindow[key];
+          else{
+            key = randomWordGenerator();
+            links[key] = {};
+          }
+
+          window.tabs.forEach(function(tab){
+            links[key][tab.title] = tab.url;
           });
+          chrome.windows.remove(window.id);
         }
+
       });
-      devTab.settingData(data.links);
+      chrome.storage.local.set({'links': links});
     });
   },
 
@@ -56,12 +62,6 @@ var devTab = {
           links[randomWordGenerator()] = this.sampleVar[key];
         }
       }
-
       chrome.storage.local.set({'links': links});
-  },
-
-  init: async function(links){
-    await devTab.promisifedTabCreation(links);
-    console.log("after opening links browseWindow", this.browseWindow);
   }
 }
