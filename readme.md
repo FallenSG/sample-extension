@@ -1,6 +1,6 @@
 ## What it is:
-  A chrome extension. 
-  
+  A chrome extension.
+
 ## Where does it work:
   Only work with chrome or chromium browsers.
 
