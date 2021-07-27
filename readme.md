@@ -5,7 +5,7 @@
   Only work with chrome or chromium browsers.
 
 ## How to use:
-when you want to browse already saved links simply select them and click "browse" button and it will open them depending upon windows and tabs. When you want to close and save   the current session simply click "save" button and when you again click on extension icon you can see their name.
+When you want to browse already saved links simply select them and click "browse" button and it will open them depending upon windows and tabs. When you want to close and save   the current session simply click "save" button and when you again click on extension icon you can see their name.
 
 ## How to install:<br/>
   - Go to extension setting in your browser.<br/>
