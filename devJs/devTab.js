@@ -1,7 +1,7 @@
 var console = chrome.extension.getBackgroundPage().console;
 
 function randomWordGenerator(){
-  //callStack: settingData(devTab.js)
+  //callStack: saveLinks(devTab.js)
   //Purpose: to creates random word from 'possible' within the range of 5-15.
 
   var text = "";
@@ -15,8 +15,6 @@ function randomWordGenerator(){
 
 var devTab = {
   browseWindow: {},
-  sampleVar: {}, //has been made redundant after making change to code.
-
 
   tabCreation: function(links){
     for(const key in links){
@@ -51,17 +49,7 @@ var devTab = {
 
       });
       chrome.storage.local.set({'links': links});
+      chrome.runtime.sendMessage({fn: 'fetchLinks'});
     });
-  },
-
-  settingData: function(links){
-      for(key in this.sampleVar){
-        if(key in this.browseWindow){
-          links[this.browseWindow[key]] = this.sampleVar[key];
-        } else{
-          links[randomWordGenerator()] = this.sampleVar[key];
-        }
-      }
-      chrome.storage.local.set({'links': links});
   }
 }

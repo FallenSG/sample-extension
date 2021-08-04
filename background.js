@@ -8,7 +8,6 @@ var background = {
 		//according to it.
 
 		this.loadConfig();
-		setInterval(this.fetchLinks, this.config.refresh_time);
 
 		chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 			if(request.fn in background){
@@ -20,8 +19,9 @@ var background = {
 	loadConfig: function(){
 		//callStack: init(background.js)
 		//Purpose: fetches 'config' from local storage and sets it to this.config
-		chrome.storage.local.get(["config"], function(items){
-		  this.config = items;
+		chrome.storage.local.get(["config", "links"], function(items){
+		  background.config = items.config;
+			background.links = items.links;
 		});
 	},
 
@@ -31,13 +31,18 @@ var background = {
 		//	from local storage and set it to this.links.
 		chrome.storage.local.get(['links'], function(items){
 			background.links = items.links;
+			console.log('accessed fetchLinks');
 		});
 	},
 
-	getLinks: function(request, sender, sendResponse){
+	getStatus: function(request, sender, sendResponse){
 		//callStack: init(popup.js)
 		//Purpose: to send this.links as response.
-		sendResponse(background.links);
+		if(this.config.isLocked){
+			sendResponse({isLocked: true});
+		} else{
+			sendResponse({isLocked: false, links: background.links});
+		}
 	},
 
 	saveLinks: function(request, sender, sendResponse) {
@@ -63,8 +68,19 @@ var background = {
 				delete this.links[windows][key];
 			}
 		}
-		chrome.storage.local.set({'links': this.links})
 		devTab.tabCreation(openingLinks);
+	},
+
+	unlockFunc: function(request, sender, sendResponse){
+		if(request.pass === background.config.password){
+			background.config.isLocked = false;
+			sendResponse({status: 200, links: background.links});
+		}
+		sendResponse({status: 401});
+	},
+
+	lockFunc: function(request, sender, sendResponse){
+		background.config.isLocked = true;
 	}
 }
 

@@ -2,10 +2,16 @@ var console = chrome.extension.getBackgroundPage().console;
 
 var popup = {
   init: function(){
-    //Purpose: sends a request to getLinks(background.js) for fetching
+    //Purpose: sends a request to getStatus(background.js) for fetching
     //  links.If response is positive links are displayed else msg.
-    chrome.runtime.sendMessage({fn: "getLinks"}, function(response){
-      if(response) popup.displayLinks(response);
+    chrome.runtime.sendMessage({fn: "getStatus"}, function(response){
+      if(response.isLocked) popup.lockScreen();
+
+      else if(!response.isLocked && response.links){
+        document.getElementById('footer').style.display = 'block';
+        popup.displayLinks(response.links);
+      }
+
       else document.getElementById('container').innerHTML = "Getting Started";
     });
   },
@@ -29,6 +35,36 @@ var popup = {
         ele.checked=bool;
       }
     }
+  },
+
+  lockScreen: function(){
+    document.getElementById('unlock').style.display = 'block';
+    document.getElementById('unlock-in').value = '';
+  },
+
+  unlockedSeq: function(){
+    var pass = document.getElementById('unlock-in').value;
+
+    chrome.runtime.sendMessage({fn:'unlockFunc', pass: pass}, function(response){
+
+      if(response.status === 200){
+        document.getElementById('unlock').style.display = 'none';
+        document.getElementById('footer').style.display = 'block';
+        popup.displayLinks(response.links);
+      }
+      else{
+        document.getElementById('unlock-msg').innerHTML = "Wrong Password";
+      }
+    });
+  },
+
+  lockSeq: function(){
+    chrome.runtime.sendMessage({fn: "lockFunc"});
+
+    document.getElementById('container').innerHTML = '';
+    document.getElementById('footer').style.display = 'none';
+
+    popup.lockScreen();
   },
 
   displayLinks: function(links){
@@ -101,4 +137,6 @@ var popup = {
 document.addEventListener('DOMContentLoaded', popup.init);
 document.getElementById('browse').addEventListener('click', popup.initTabCreation);
 document.getElementById('save').addEventListener('click', popup.initSaveLinks);
+document.getElementById('mayday').addEventListener('click', popup.lockSeq);
+document.getElementById('unlock-btn').addEventListener('click', popup.unlockedSeq);
 document.addEventListener('click', popup.checkSelector);

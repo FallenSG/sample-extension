@@ -1,21 +1,4 @@
-// A js script designed for making the developer life easy.
-// How you ask, well if you are debugging while working on it
-// and you need to check using a specific data then you can
-// simply add the data in json format to the project folder
-// and here you simply pass the name of the file
-
-// How to use -
-//  dataSetter('file_name_here_with_path') to set the json file
-//    content in browser local storage
-//  dataViewer('key_name') to fetch the data from browser local
-//    storage and checking values of that key.
-
-
-//  Note: Need to see whether promisifed version of this works
-//  already has created it but test phase is still pending
-//  so pay caution.
-
-//Need to refine the code with the  need to setting function properly
+//*Documentation required
 
 function FileDataSetter(file){
   //callStack: promisifiedDataSetter(devStorage.js)
@@ -85,6 +68,13 @@ var devStorage = {
   }
 }
 
+var configuration = {
+  'isLocked': true,
+  'password': "sample",
+  'refresh_time': 500
+};
+
 // devStorage.fileSet('config.json');
-// devStorage.varSet({config: {refresh_time: 500}});
+// devStorage.varSet({config: configuration});
 // devStorage.view(['links', 'config']);
+// devStorage.purge(['links']);
