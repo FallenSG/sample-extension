@@ -19,11 +19,16 @@ input[type='checkbox']{
 	left: 95%;
 }
 
-#unlock{
+.lock{
 	margin: 0;
-  position: absolute;
-  top: 40%;
-  left: 50%;
-  -ms-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
+	position: absolute;
+	top: 40%;
+	left: 50%;
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+}
+
+#edit{
+	position: absolute;
+	left: 95%;
 }

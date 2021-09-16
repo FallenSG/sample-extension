@@ -32,7 +32,24 @@ function promisifiedDataSetter(file, timeOut=1500){
   });
 }
 
+var defaultConfig = {
+  'config': {
+    'isLocked': false,
+    'password': ""
+  },
+  'links': {}
+};
+
 var devStorage = {
+  init: function() {
+    chrome.storage.local.get(['config', 'links'], function(items){
+      if(!items.config)
+        chrome.storage.local.set({'config': defaultConfig.config});
+      if(!items.links)
+        chrome.storage.local.set({'links': defaultConfig.links});
+    });
+  },
+
   fileSet: async function(file){
     //Purpose: takes an file path and executes async function below.
     await promisifiedDataSetter(file); //file path is must and timeOut can be set.
@@ -40,7 +57,7 @@ var devStorage = {
 
   varSet: function(data){
     //Purpose: only takes data and set it to local storage.
-    chrome.storage.local.set(data, function(){
+    chrome.storage.local.set(data, function( ){
       console.log({msg: "Data set Complete", dataVal: data});
     })
   },
@@ -54,7 +71,7 @@ var devStorage = {
   purge: function(data){
     //Purpose: takes an array of "key" values and remove them from
     //  local storage.
-    chrome.local.storage.remove(data, function(){
+    chrome.storage.local.remove(data, function(){
       console.log({msg: "Data Purge completed"});
     });
   },
@@ -68,13 +85,10 @@ var devStorage = {
   }
 }
 
-var configuration = {
-  'isLocked': true,
-  'password': "sample",
-  'refresh_time': 500
-};
+devStorage.init();
 
-// devStorage.fileSet('config.json');
-// devStorage.varSet({config: configuration});
+// devStorage.purgeAll();
+// devStorage.fileSet('links.json');
+// devStorage.varSet({config: defaultConfig});
 // devStorage.view(['links', 'config']);
 // devStorage.purge(['links']);

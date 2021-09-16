@@ -18,6 +18,8 @@
 
   "permissions": [
     "storage",
-    "tabs"
+    "tabs",
+    "contextMenus",
+    "downloads"
   ]
 }
