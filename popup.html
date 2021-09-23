@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html>
 <body>
-	<button class="unlock" id="edit">Edit</button>
-	<button class="unlock" id="settingBtn">Setting</button>
+	<div class="header">
+		<button class="unlock rightPosBtn" id="editBtn">Edit</button>
+		<button class="unlock" id="settingBtn">Setting</button>
+
+		<button class="settingMenu rightPosBtn" id="home">Home</button>
+	</div>
 
 	<div class="unlock" id="container"> </div>
-	<div class="settingPage" id="settingMenu"> </div>
+	<div class="settingMenu" id="settingPage"> </div>
 
 	<form class="lock">
 		<p id="lockMsg"> </p> <br/>
@@ -14,13 +18,14 @@
 	</form>
 
 	<footer class="unlock" id="footer">
-		<button id="save">Save</button>
+		<button id="fastSave">Fast Save</button>
+		<button id="nameSave">Save</button>
 		<button id="browse">Browse</button>
-		<button id="mayday">Lock</button>
-		<button id="download">Download</button>
+		<button id="unlockBtn">Lock</button>
 	</footer>
 </body>
 
-<script type="text/javascript" src="popup.js"></script>
+<script type="text/javascript" src="popupScript/popup.js"></script>
+<script type="text/javascript" src="popupScript/setting.js"></script>
 <link rel="stylesheet" type="text/css" href="assets/style.css">
 </html>

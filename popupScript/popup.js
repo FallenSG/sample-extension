@@ -8,6 +8,27 @@ function displaySetter(defStyle) {
   }
 }
 
+function checkSelector(MouseEvent) {
+  //callStack: when a click event happens.
+
+  //arg: all the information of the clicked objecct.
+
+  //Purpose: check whether the clicked object is checkbox or not.
+  //  If yes, then get all child checkbox for that parent(using regex
+  //  and querySelectorAll) and toggle them depending upon parent checkbox.
+
+  var checkId = MouseEvent.target.id;
+  if (checkId[0] === 'c' && checkId[1] === 'h') {
+    var checkEle = document.querySelectorAll(`[id^="${checkId}-"]`);
+    var bool = true;
+
+    if (MouseEvent.target.checked === false) bool = false;
+    for (ele of checkEle) {
+      ele.checked = bool;
+    }
+  }
+}
+
 var popup = {
   init: function(){
     //Purpose: sends a request to getStatus(background.js) for fetching
@@ -21,27 +42,6 @@ var popup = {
         popup.displayLinks(response.links);
       }
     });
-  },
-
-  checkSelector: function (MouseEvent) {
-    //callStack: when a click event happens.
-
-    //arg: all the information of the clicked objecct.
-
-    //Purpose: check whether the clicked object is checkbox or not.
-    //  If yes, then get all child checkbox for that parent(using regex
-    //  and querySelectorAll) and toggle them depending upon parent checkbox.
-
-    var checkId = MouseEvent.target.id;
-    if (checkId[0] === 'c' && checkId[1] === 'h') {
-      var checkEle = document.querySelectorAll(`[id^="${checkId}-"]`);
-      var bool = true;
-
-      if (MouseEvent.target.checked === false) bool = false;
-      for (ele of checkEle) {
-        ele.checked = bool;
-      }
-    }
   },
 
   unlockSeq: function () {
@@ -71,7 +71,7 @@ var popup = {
     //callStack: init(popup.js)
 
     var element = document.getElementById('container');
-    if(!links){
+    if(Object.keys(links).length === 0){
       element.innerHTML = "Getting Started";
     }
 
@@ -130,27 +130,18 @@ var popup = {
     chrome.runtime.sendMessage({ fn: "tabCreation", links: links });
   },
 
-  initSaveLinks: function () {
-    //callStack: click event of 'save' button
+  initSaveLinks: function (btn) {
+    //callStack: click event of save buttons
     //Purpose: sends a message to background.js to execute function saveLinks.
-    chrome.runtime.sendMessage({ fn: "saveLinks" });
-  },
-
-  downloadFile: function(){
-    chrome.storage.local.get(['links'], function(items){
-      var blob = new Blob([JSON.stringify(items.links)], {type: "text/plain"});
-      var url = URL.createObjectURL(blob);
-
-      chrome.downloads.download({ url: url });
-    });
+    chrome.runtime.sendMessage({ fn: "saveLinks", btnClick: btn.target.id});
   }
 }
 
 
 document.addEventListener('DOMContentLoaded', popup.init);
 document.getElementById('browse').addEventListener('click', popup.initTabCreation);
-document.getElementById('save').addEventListener('click', popup.initSaveLinks);
-document.getElementById('mayday').addEventListener('click', popup.lockSeq);
-document.getElementById('download').addEventListener('click', popup.downloadFile);
+document.getElementById('nameSave').addEventListener('click', popup.initSaveLinks);
+document.getElementById('fastSave').addEventListener('click', popup.initSaveLinks);
+document.getElementById('unlockBtn').addEventListener('click', popup.lockSeq);
 document.getElementById('lockBtn').addEventListener('click', popup.unlockSeq);
-document.addEventListener('click', popup.checkSelector);
+document.addEventListener('click', checkSelector);

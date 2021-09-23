@@ -47,7 +47,7 @@ var bkgd = {
 	saveLinks: function(request, sender, sendResponse) {
 		//callStack: initSaveLinks(popup.js).
 		//Purpose: to execute the saveLinks(devTab) function for saving links.
-		devTab.saveLinks(bkgd.links);
+		devTab[request.btnClick](bkgd.links);
 	},
 
 	tabCreation: function(request, sender, sendResponse){
@@ -80,6 +80,10 @@ var bkgd = {
 
 	lockFunc: function(request, sender, sendResponse){
 		bkgd.config.isLocked = true;
+	},
+
+	purgeAll: function(request, sender, sendResponse){
+		devStorage.purgeAll()
 	}
 }
 

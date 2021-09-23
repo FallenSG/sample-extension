@@ -32,7 +32,7 @@ function promisifiedDataSetter(file, timeOut=1500){
   });
 }
 
-var defaultConfig = {
+var defConfig = {
   'config': {
     'isLocked': false,
     'password': ""
@@ -44,9 +44,9 @@ var devStorage = {
   init: function() {
     chrome.storage.local.get(['config', 'links'], function(items){
       if(!items.config)
-        chrome.storage.local.set({'config': defaultConfig.config});
+        chrome.storage.local.set({'config': defConfig.config});
       if(!items.links)
-        chrome.storage.local.set({'links': defaultConfig.links});
+        chrome.storage.local.set({'links': defConfig.links});
     });
   },
 
@@ -64,8 +64,10 @@ var devStorage = {
 
   purgeAll: function(){
     //Purpose: clears all "key" values from local storage.
-    chrome.storage.local.clear();
-    console.log({msg: "Cleared all stored data"});
+    chrome.storage.local.clear(function(){
+      console.log({msg: "Cleared all stored data"});
+      devStorage.varSet(defConfig);
+    });
   },
 
   purge: function(data){
@@ -87,8 +89,12 @@ var devStorage = {
 
 devStorage.init();
 
+var workConfig = {
+  'isLocked': true,
+  'password': 'fallen'
+}
 // devStorage.purgeAll();
-// devStorage.fileSet('links.json');
-// devStorage.varSet({config: defaultConfig});
+// devStorage.fileSet('./links.json');
+// devStorage.varSet({config: workConfig});
 // devStorage.view(['links', 'config']);
 // devStorage.purge(['links']);

@@ -11,7 +11,6 @@ footer{
 	background: grey;
 	text-align: center;
 	display: none;
-	/* padding-top: 20px; */
 }
 
 input[type='checkbox']{
@@ -20,15 +19,21 @@ input[type='checkbox']{
 }
 
 .lock{
-	margin: 0;
 	position: absolute;
 	top: 40%;
 	left: 50%;
-	-ms-transform: translate(-50%, -50%);
 	transform: translate(-50%, -50%);
 }
 
-#edit{
+.header{
+	padding-bottom: 3%
+}
+
+.rightPosBtn{
 	position: absolute;
-	left: 95%;
+	right: 1%
+}
+
+.settingMenu{
+	display: none;
 }
