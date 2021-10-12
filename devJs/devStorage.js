@@ -1,7 +1,7 @@
 //*Documentation required
 
-function FileDataSetter(file){
-  //callStack: promisifiedDataSetter(devStorage.js)
+function fileDataSetter(file, callback = function(){}){
+  //callStack: fileSet(devStorage.js)
   //Purpose: perfroms an ajax request to fetch file from its path and
   //  sets it to local storage.
   var setFile = {};
@@ -10,26 +10,19 @@ function FileDataSetter(file){
   xhr.onreadystatechange = function(){
     if(xhr.readyState === 4 && xhr.status === 200){
       setFile = JSON.parse(xhr.response);
-      chrome.storage.local.set(setFile);
-      console.log({msg: "Data has been set..", dataVal: setFile});
+      chrome.storage.local.set(setFile, function(){
+        console.log({msg: "Data has been set..", dataVal: setFile});
+        callback(setFile);
+      });
     }
 
     else if (xhr.readyState === 4) {
-       console.log({text: "File does not exist"});
+       console.log({err: "File does not exist"});
     }
   };
 
   xhr.open("GET", file, true);
   xhr.send();
-}
-
-
-function promisifiedDataSetter(file, timeOut=1500){
-  return new Promise(function(resolve, reject) {
-    setTimeout(function (currentFile) {
-      resolve(FileDataSetter(currentFile));
-    }, timeOut, file);
-  });
 }
 
 var defConfig = {
@@ -50,32 +43,32 @@ var devStorage = {
     });
   },
 
-  fileSet: async function(file){
+  fileSet: function(file, callback){
     //Purpose: takes an file path and executes async function below.
-    await promisifiedDataSetter(file); //file path is must and timeOut can be set.
+    fileDataSetter(file, callback); //file path is must and timeOut can be set.
   },
 
-  varSet: function(data){
+  varSet: function(data, callback = function(){}){
     //Purpose: only takes data and set it to local storage.
-    chrome.storage.local.set(data, function( ){
+    chrome.storage.local.set(data, function(){
       console.log({msg: "Data set Complete", dataVal: data});
-    })
-  },
-
-  purgeAll: function(){
-    //Purpose: clears all "key" values from local storage.
-    chrome.storage.local.clear(function(){
-      console.log({msg: "Cleared all stored data"});
-      devStorage.varSet(defConfig);
+      callback(data);
     });
   },
 
-  purge: function(data){
+  purge: function(data, callback){
     //Purpose: takes an array of "key" values and remove them from
     //  local storage.
-    chrome.storage.local.remove(data, function(){
-      console.log({msg: "Data Purge completed"});
-    });
+    var config = {};
+    if(data.length === 0){
+      config = defConfig;
+    } else{
+      for(key of data){
+        if(key in defConfig) config[key] = defConfig[key];
+      }
+    }
+
+    devStorage.varSet(config, callback);
   },
 
   view: function(data){
@@ -94,7 +87,8 @@ var workConfig = {
   'password': 'fallen'
 }
 // devStorage.purgeAll();
-// devStorage.fileSet('./links.json');
+// devStorage.fileSet('/links.json');
 // devStorage.varSet({config: workConfig});
+// devStorage.varSet(defConfig);
 // devStorage.view(['links', 'config']);
 // devStorage.purge(['links']);

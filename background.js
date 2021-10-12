@@ -2,6 +2,11 @@ var bkgd = {
 	config: {}, //variable used to store configuration loaded from storage.
 	links: {}, //variable used to store links loaded from storage.
 
+	ackg: function(request, sender, sendResponse){
+		console.log("Recieved msg hosted on background.js");
+		sendResponse("msg acknowledegd");
+	},
+
 	init: function(){
 		//Invokes certain function necessary for proper working of extension.
 		//Also acts as listener for any messages and executes function
@@ -16,7 +21,7 @@ var bkgd = {
 		});
 	},
 
-	loadConfig: function(){
+	loadConfig: function(){  //use is redundant
 		//callStack: init(background.js)
 		//Purpose: fetches 'config' from local storage and sets it to this.config
 		chrome.storage.local.get(["config", "links"], function(items){
@@ -25,12 +30,12 @@ var bkgd = {
 		});
 	},
 
-	fetchLinks: function(){
+	fetchLinks: function(request, sender, sendResponse){ //deprecated
 		//callStack: init(background.js)
 		//Purpose: invokes at certain interval of time to fetch 'links'
 		//	from local storage and set it to this.links.
-		chrome.storage.local.get(['links'], function(items){
-			bkgd.links = items.links;
+		chrome.storage.local.get(['links', 'config'], function(items){
+			sendResponse(items.links);
 		});
 	},
 
@@ -82,8 +87,11 @@ var bkgd = {
 		bkgd.config.isLocked = true;
 	},
 
-	purgeAll: function(request, sender, sendResponse){
-		devStorage.purgeAll()
+	purgeReq: function(request, sender, sendResponse){
+		devStorage.purge(request.data, function(items){
+			if(items.links) bkgd.links = items.links;
+			if(items.config) bkgd.config = items.config;
+		});
 	}
 }
 

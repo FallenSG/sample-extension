@@ -76,6 +76,8 @@ var popup = {
     }
 
     else{
+      element.innerHTML = '';
+      
       for (key in links) {
         element.innerHTML += `<button id="${key}"> ${key} </button>`;
         var div = document.createElement('div');
@@ -144,4 +146,5 @@ document.getElementById('nameSave').addEventListener('click', popup.initSaveLink
 document.getElementById('fastSave').addEventListener('click', popup.initSaveLinks);
 document.getElementById('unlockBtn').addEventListener('click', popup.lockSeq);
 document.getElementById('lockBtn').addEventListener('click', popup.unlockSeq);
+document.getElementById('home').addEventListener('click', popup.init);
 document.addEventListener('click', checkSelector);

@@ -17,7 +17,9 @@ var data = {
   'downloadLinks': {'name': 'Download', 'label': 'Download Links'},
   'downloadConfig': {'name': 'Download', 'label': 'Download Config'},
   'initPurgeAll': {'name': 'Purge All', 'label': 'Clear All Data'},
-  'initFileSet': {'name': 'Upload', 'label': 'Config'}
+  'initConfPurge': {'name': 'Clear', 'label': 'Clear Config'},
+  'initLinksPurge': {'name': 'Clear', 'label': 'Clear Links'},
+  'setPass': {'name': 'Set Password', 'label': 'Set Password'}
 }
 
 var setting = {
@@ -29,9 +31,12 @@ var setting = {
 
   menuSetter: function(){
     var element = document.getElementById('settingPage');
+    element.innerHTML += `<table id='menuTable'> </table>`;
+    var table = document.getElementById('menuTable');
+
     for(btn in data){
-      element.innerHTML += `<label>${data[btn].label}</label>`
-      element.innerHTML += `<button id="${btn}">${data[btn].name}</button> <br\>`
+      table.innerHTML += `<tr> <td> <label>${data[btn].label}</label> </td>
+        \ <td> <button id="${btn}">${data[btn].name}</button> </td> </tr>`
     }
   },
 
@@ -59,10 +64,19 @@ var setting = {
   },
 
   initPurgeAll: function(){
-    chrome.runtime.sendMessage({fn: "purgeAll"});
+    var conf = confirm("Do you wish to Continue");
+    if(conf)  chrome.runtime.sendMessage({fn: "purgeReq", data: []});
   },
 
-  initFileSet: function(){ console.log('initFileSet'); }
+  initConfPurge: function(){
+    var conf = confirm("Do you wish to Continue");
+    if(conf)  chrome.runtime.sendMessage({fn: "purgeReq", data: ['config']});
+  },
+
+  initLinksPurge: function(){
+    var conf = confirm("Do you wish to Continue");
+    if(conf)  chrome.runtime.sendMessage({fn: "purgeReq", data: ['links']});
+  }
 }
 
 document.getElementById('settingBtn').addEventListener('click', setting.init);

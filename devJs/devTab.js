@@ -49,7 +49,6 @@ var devTab = {
 
       });
       chrome.storage.local.set({'links': links});
-      chrome.runtime.sendMessage({fn: 'fetchLinks'});
     });
   },
 
@@ -78,7 +77,6 @@ var devTab = {
 
       });
       chrome.storage.local.set({'links': links});
-      chrome.runtime.sendMessage({fn: 'fetchLinks'});
     });
   }
 }
