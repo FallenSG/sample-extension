@@ -8,27 +8,6 @@ function displaySetter(defStyle) {
   }
 }
 
-function checkSelector(MouseEvent) {
-  //callStack: when a click event happens.
-
-  //arg: all the information of the clicked objecct.
-
-  //Purpose: check whether the clicked object is checkbox or not.
-  //  If yes, then get all child checkbox for that parent(using regex
-  //  and querySelectorAll) and toggle them depending upon parent checkbox.
-
-  var checkId = MouseEvent.target.id;
-  if (checkId[0] === 'c' && checkId[1] === 'h') {
-    var checkEle = document.querySelectorAll(`[id^="${checkId}-"]`);
-    var bool = true;
-
-    if (MouseEvent.target.checked === false) bool = false;
-    for (ele of checkEle) {
-      ele.checked = bool;
-    }
-  }
-}
-
 var popup = {
   init: function(){
     //Purpose: sends a request to getStatus(background.js) for fetching
@@ -44,11 +23,32 @@ var popup = {
     });
   },
 
+  checkSelector: function (MouseEvent) {
+    //callStack: when a click event happens.
+
+    //arg: all the information of the clicked objecct.
+
+    //Purpose: check whether the clicked object is checkbox or not.
+    //  If yes, then get all child checkbox for that parent(using regex
+    //  and querySelectorAll) and toggle them depending upon parent checkbox.
+
+    var checkId = MouseEvent.target.id;
+    if (checkId[0] === 'c' && checkId[1] === 'h') {
+      var checkEle = document.querySelectorAll(`[id^="${checkId}-"]`);
+      var bool = true;
+
+      if (MouseEvent.target.checked === false) bool = false;
+      for (ele of checkEle) {
+        ele.checked = bool;
+      }
+    }
+  },
+
   unlockSeq: function () {
     var pass = document.getElementById('lockIn').value;
 	  document.getElementById('lockIn').value = '';
 
-    chrome.runtime.sendMessage({ fn: 'lockToggler', reqType: 'unlock', pass: pass }, function (response) {
+    chrome.runtime.sendMessage({ fn: 'unlockFunc', pass: pass }, function (response) {
       if (response.status === 200) {
         displaySetter({ '.unlock': 'block', '.lock': 'none' });
         popup.displayLinks(response.links);
@@ -60,10 +60,9 @@ var popup = {
   },
 
   lockSeq: function () {
-    chrome.runtime.sendMessage({ fn: 'lockToggler', reqType: 'lock'});
+    chrome.runtime.sendMessage({ fn: "lockFunc" });
 
     document.getElementById('container').innerHTML = '';
-    document.getElementById('lockMsg').innerHTML = '';
     displaySetter({ '.unlock': 'none', '.lock': 'block' });
   },
 
@@ -71,13 +70,11 @@ var popup = {
     //callStack: init(popup.js)
 
     var element = document.getElementById('container');
-    if(Object.keys(links).length === 0){
+    if(!links){
       element.innerHTML = "Getting Started";
     }
 
     else{
-      element.innerHTML = '';
-
       for (key in links) {
         element.innerHTML += `<button id="${key}"> ${key} </button>`;
         var div = document.createElement('div');
@@ -132,19 +129,27 @@ var popup = {
     chrome.runtime.sendMessage({ fn: "tabCreation", links: links });
   },
 
-  initSaveLinks: function (btn) {
-    //callStack: click event of save buttons
+  initSaveLinks: function () {
+    //callStack: click event of 'save' button
     //Purpose: sends a message to background.js to execute function saveLinks.
-    chrome.runtime.sendMessage({ fn: "saveLinks", btnClick: btn.target.id});
+    chrome.runtime.sendMessage({ fn: "saveLinks" });
+  },
+
+  downloadFile: function(){
+    chrome.storage.local.get(['links'], function(items){
+      var blob = new Blob([JSON.stringify(items.links)], {type: "text/plain"});
+      var url = URL.createObjectURL(blob);
+
+      chrome.downloads.download({ url: url });
+    });
   }
 }
 
 
 document.addEventListener('DOMContentLoaded', popup.init);
 document.getElementById('browse').addEventListener('click', popup.initTabCreation);
-document.getElementById('nameSave').addEventListener('click', popup.initSaveLinks);
-document.getElementById('fastSave').addEventListener('click', popup.initSaveLinks);
-document.getElementById('unlockBtn').addEventListener('click', popup.lockSeq);
+document.getElementById('save').addEventListener('click', popup.initSaveLinks);
+document.getElementById('mayday').addEventListener('click', popup.lockSeq);
+document.getElementById('download').addEventListener('click', popup.downloadFile);
 document.getElementById('lockBtn').addEventListener('click', popup.unlockSeq);
-document.getElementById('home').addEventListener('click', popup.init);
-document.addEventListener('click', checkSelector);
+document.addEventListener('click', popup.checkSelector);

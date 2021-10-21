@@ -34,12 +34,16 @@ var defConfig = {
 };
 
 var devStorage = {
-  init: function() {
+  init: function(callback = function(){}) {
+    var setter = {}
     chrome.storage.local.get(['config', 'links'], function(items){
-      if(!items.config)
-        chrome.storage.local.set({'config': defConfig.config});
-      if(!items.links)
-        chrome.storage.local.set({'links': defConfig.links});
+      setter = items;
+
+      if(!setter.config) setter['config'] = defConfig['config'];
+      if(!setter.links) setter['links'] = defConfig['links'];
+
+      if(setter === items) callback(setter);
+      else if(JSON.stringify(setter) !== "{}")  devStorage.varSet(setter, callback);
     });
   },
 
@@ -80,7 +84,6 @@ var devStorage = {
   }
 }
 
-devStorage.init();
 
 var workConfig = {
   'isLocked': true,

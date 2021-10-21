@@ -11,31 +11,15 @@ var bkgd = {
 		//Invokes certain function necessary for proper working of extension.
 		//Also acts as listener for any messages and executes function
 		//according to it.
-
-		this.loadConfig();
+		devStorage.init(function(items){
+			bkgd.config = items.config;
+			bkgd.links = items.links;
+		});
 
 		chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 			if(request.fn in bkgd){
 				bkgd[request.fn](request, sender, sendResponse);
 			}
-		});
-	},
-
-	loadConfig: function(){  //use is redundant
-		//callStack: init(background.js)
-		//Purpose: fetches 'config' from local storage and sets it to this.config
-		chrome.storage.local.get(["config", "links"], function(items){
-		  bkgd.config = items.config;
-			bkgd.links = items.links;
-		});
-	},
-
-	fetchLinks: function(request, sender, sendResponse){ //deprecated
-		//callStack: init(background.js)
-		//Purpose: invokes at certain interval of time to fetch 'links'
-		//	from local storage and set it to this.links.
-		chrome.storage.local.get(['links', 'config'], function(items){
-			sendResponse(items.links);
 		});
 	},
 
@@ -75,16 +59,15 @@ var bkgd = {
 		devTab.tabCreation(openingLinks);
 	},
 
-	unlockFunc: function(request, sender, sendResponse){
-		if(request.pass === bkgd.config.password){
-			bkgd.config.isLocked = false;
-			sendResponse({status: 200, links: bkgd.links});
+	lockToggler: function(request, sender, sendResponse){
+		if(request.reqType === "lock") bkgd.config.isLocked = true;
+		else {
+			if(request.pass === bkgd.config.password){
+				bkgd.config.isLocked = false;
+				sendResponse({status: 200, links: bkgd.links});
+			}
+			sendResponse({status: 401});
 		}
-		sendResponse({status: 401});
-	},
-
-	lockFunc: function(request, sender, sendResponse){
-		bkgd.config.isLocked = true;
 	},
 
 	purgeReq: function(request, sender, sendResponse){
