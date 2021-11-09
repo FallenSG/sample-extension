@@ -37,7 +37,7 @@ var devStorage = {
   init: function(callback = function(){}) {
     var setter = {}
     chrome.storage.local.get(['config', 'links'], function(items){
-      setter = items;
+      setter = Object.assign({}, items);
 
       if(!setter.config) setter['config'] = defConfig['config'];
       if(!setter.links) setter['links'] = defConfig['links'];
@@ -73,6 +73,10 @@ var devStorage = {
     }
 
     devStorage.varSet(config, callback);
+  },
+
+  purgeAll: function(callback = function(){}){
+    chrome.storage.local.clear(callback());
   },
 
   view: function(data){

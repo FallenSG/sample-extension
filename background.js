@@ -81,31 +81,33 @@ var bkgd = {
 bkgd.init();
 
 
-var search = {
-	    title: "Search on",
-	    id: "searchEngine",
-	    contexts:["selection", "image"]
-	};
-
-  chrome.contextMenus.create(search);
-
-  chrome.contextMenus.create({
-    title: "Google",
-    parentId: "searchEngine",
-    id: "google",
-    contexts: ["selection"],
-		onclick: function(e){
-			console.log(e);
-		}
-  });
-
-
-	chrome.contextMenus.create({
-		title: "Bing",
-		parentId: "searchEngine",
-		id: "bing",
-		contexts: ["image"],
-		onclick: function(e){
-			console.log(e);
-		}
-	});
+// {
+// 	var search = {
+// 	    title: "Search on",
+// 	    id: "searchEngine",
+// 	    contexts:["selection", "image"]
+// 	};
+//
+//   chrome.contextMenus.create(search);
+//
+//   chrome.contextMenus.create({
+//     title: "Google",
+//     parentId: "searchEngine",
+//     id: "google",
+//     contexts: ["selection"],
+// 		onclick: function(e){
+// 			console.log(e);
+// 		}
+//   });
+//
+//
+// 	chrome.contextMenus.create({
+// 		title: "Bing",
+// 		parentId: "searchEngine",
+// 		id: "bing",
+// 		contexts: ["image"],
+// 		onclick: function(e){
+// 			console.log(e);
+// 		}
+// 	});
+// }

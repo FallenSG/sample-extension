@@ -47,7 +47,7 @@ var setting = {
 
   downloadLinks: function(){
     chrome.storage.local.get(['links'], function(items){
-      var blob = new Blob([JSON.stringify(items.links)], {type: "text/json"});
+      var blob = new Blob([JSON.stringify({'links': items.links})], {type: "text/json"});
       var url = URL.createObjectURL(blob);
 
       chrome.downloads.download({ url: url });
@@ -56,7 +56,7 @@ var setting = {
 
   downloadConfig: function(){
     chrome.storage.local.get(['config'], function(items){
-      var blob = new Blob([JSON.stringify(items.config)], {type: "text/json"});
+      var blob = new Blob([JSON.stringify({'config': items.config})], {type: "text/json"});
       var url = URL.createObjectURL(blob);
 
       chrome.downloads.download({ url: url });
@@ -76,6 +76,15 @@ var setting = {
   initLinksPurge: function(){
     var conf = confirm("Do you wish to Continue");
     if(conf)  chrome.runtime.sendMessage({fn: "purgeReq", data: ['links']});
+  },
+
+  setPass: function(){
+    var pass = prompt("Enter New Password");
+    var confPass;
+    if(pass){
+      confPass = prompt("Re-enter New Password");
+      if(pass === confPass) chrome.runtime.sendMessage();
+    }
   }
 }
 
