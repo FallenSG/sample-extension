@@ -36,7 +36,8 @@ var bkgd = {
 	saveLinks: function(request, sender, sendResponse) {
 		//callStack: initSaveLinks(popup.js).
 		//Purpose: to execute the saveLinks(devTab) function for saving links.
-		devTab[request.btnClick](bkgd.links);
+
+		devTab.saveLinks(bkgd.links, request.reqType);
 	},
 
 	tabCreation: function(request, sender, sendResponse){
@@ -53,8 +54,8 @@ var bkgd = {
 			openingLinks[windows] = [];
 			for(key of request.links[windows]){
 				openingLinks[windows].push(this.links[windows][key]);
-				delete this.links[windows][key];
 			}
+			delete bkgd.links[windows]
 		}
 		devTab.tabCreation(openingLinks);
 	},
@@ -75,6 +76,15 @@ var bkgd = {
 			if(items.links) bkgd.links = items.links;
 			if(items.config) bkgd.config = items.config;
 		});
+	},
+
+	changeConfig: function(request, sender, sendResponse){
+		if(request.var === 'password'){
+			bkgd.config['password'] = request.val;
+			bkgd.config['isLocked'] = true;
+		}
+
+		devStorage.varSet({'config': bkgd.config});
 	}
 }
 

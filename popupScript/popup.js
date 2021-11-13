@@ -135,7 +135,7 @@ var popup = {
   initSaveLinks: function (btn) {
     //callStack: click event of save buttons
     //Purpose: sends a message to background.js to execute function saveLinks.
-    chrome.runtime.sendMessage({ fn: "saveLinks", btnClick: btn.target.id});
+    chrome.runtime.sendMessage({ fn: "saveLinks", reqType: btn.target.id});
   }
 }
 

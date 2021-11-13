@@ -83,7 +83,9 @@ var setting = {
     var confPass;
     if(pass){
       confPass = prompt("Re-enter New Password");
-      if(pass === confPass) chrome.runtime.sendMessage();
+      if(pass === confPass){
+        chrome.runtime.sendMessage({fn: "changeConfig", var: "password", val: pass});
+      }
     }
   }
 }

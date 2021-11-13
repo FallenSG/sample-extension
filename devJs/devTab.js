@@ -28,31 +28,7 @@ var devTab = {
     }
   },
 
-  fastSave: function(links){
-    chrome.windows.getAll({populate: true}, function(windows_list){
-      windows_list.forEach(function(window){
-
-        if(window.incognito){
-          let key = window.id;
-
-          if(key in devTab.browseWindow) key = devTab.browseWindow[key];
-          else{
-            key = randomWordGenerator();
-            links[key] = {};
-          }
-
-          window.tabs.forEach(function(tab){
-            links[key][tab.title] = tab.url;
-          });
-          chrome.windows.remove(window.id);
-        }
-
-      });
-      chrome.storage.local.set({'links': links});
-    });
-  },
-
-  nameSave: function(links){
+  saveLinks: function(links, reqType){
     chrome.windows.getAll({populate: true}, function(windows_list){
       windows_list.forEach(function(window){
 
@@ -67,8 +43,9 @@ var devTab = {
 
           if(key in devTab.browseWindow) key = devTab.browseWindow[key];
           else{
-            key = prompt(nameLinks + "\nEnter Window Name for above mentioned links");
-            if(!key) key = randomWordGenerator()
+            if(reqType === 'nameSave')
+              key = prompt(nameLinks + "\nEnter Window Name for above mentioned links");
+            if(!key) key = randomWordGenerator();
           }
 
           links[key] = tempLinks;
