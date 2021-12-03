@@ -1,0 +1,125 @@
+@paddingStyling: 1%;
+@fontFamily: monospace;
+@SettingFontSize: 25px;
+@borderRad: 5px;
+@settingBackClr: orange;
+@settingFontClr: #F5F5F5;
+@settingHoverClr: #00ffa5;
+@closeBtnBkgdClr: #EFDCF9;
+@closeBtnFontClr: #323E42;
+
+body{
+	height: 500px;
+	max-height: 500px;
+	width: 450px;
+	max-width: 450px;
+	overflow-x: hidden;
+	@media (min-width: 450px){
+		width: 100vw;
+		height: 100vh;
+	}
+	font-family: @fontFamily;
+	font-size: 14px;
+	margin: 0;
+}
+
+#footer {
+	position: fixed;
+	text-align: center;
+	outline: none;
+	padding: @paddingStyling 0 @paddingStyling 0;
+	bottom: 0;
+	left: 0;
+	background-color: #def2f1;
+	width: 100%;
+	z-index: 0;
+	font-size: 0.6 * @SettingFontSize;
+
+	select{
+		font: inherit;
+		outline: none;
+		text-align: center;
+		width: 60%;
+		height: 25px;
+		margin: 1% 0 1% 0;
+		border-radius: @borderRad;
+	}
+
+	button{
+		font: inherit;
+		border-radius: inherit;
+		outline: none;
+		border: 1px;
+		border-radius: @borderRad;
+		background: #17252a;
+		color: #ffffff;
+	}
+}
+
+#settingPage {
+	text-align: center;
+	overflow-x: hidden;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 100%;
+	z-index: 1;
+	background-color: @settingBackClr;
+	padding-bottom: 5%;
+	transition: 0.5s;
+
+	a{
+		cursor: pointer;
+		text-decoration: none;
+		display: block;
+		padding: 8px 8px 8px 32px;
+	  font-size: @SettingFontSize;
+	  color: @settingFontClr;
+	  transition: 0.3s;
+		&:hover { color: @settingHoverClr; }
+	}
+	#closeBtn{
+		position: -webkit-sticky;
+		position: sticky;
+		z-index: 100;
+		top: 0;
+		border-bottom-left-radius: 40px;
+		font-size: 1.4 * @SettingFontSize;
+		background-color: @closeBtnBkgdClr;
+		color: @closeBtnFontClr;
+	}
+}
+
+#header {
+	width: inherit;
+	padding-top: @paddingStyling;
+	margin-bottom: 3%;
+	background-color: #def2f1;
+
+	#settingBtn{
+		padding-left: @paddingStyling;
+	}
+
+	#editBtn{
+		position: absolute;
+		right: @paddingStyling;
+	}
+}
+
+#container{
+	overflow-x: hidden;
+	height: inherit;
+	width: inherit;
+
+	#displayTable{
+		table-layout: fixed;
+		word-wrap: break-word;
+		width: 100%;
+
+		th:nth-child(even), td:nth-child(even){
+			width: 10%;
+			text-align: center;
+		}
+	}
+}
