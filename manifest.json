@@ -1,21 +1,18 @@
 {
   "manifest_version": 2,
   "name": "Easify",
-  "version": "0.5.0",
-
+  "version": "0.9.0",
   "browser_action": {
     "default_popup": "popup.html",
     "default_icon": "assets/128.png"
   },
-
-  "background":{
+  "background": {
     "scripts": [
       "devJs/devStorage.js",
       "devJs/devTab.js",
       "background.js"
     ]
   },
-
   "permissions": [
     "storage",
     "tabs",

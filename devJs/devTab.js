@@ -16,16 +16,14 @@ function randomWordGenerator(){
 var devTab = {
   browseWindow: {},
 
-  tabCreation: function(links){
-    for(const key in links){
-      chrome.windows.create({url: links[key][0], incognito: true}, function(windows){
-        for(let i=1;i<links[key].length;i++){
-          chrome.tabs.create({url: links[key][i], windowId: windows.id});
-        }
+  tabCreation: function(links, key){
+    chrome.windows.create({url: links[0], incognito: true}, function(windows){
+      for(let i=1;i<links.length;i++){
+        chrome.tabs.create({url: links[i], windowId: windows.id});
+      }
 
-        devTab.browseWindow[windows.id] = key;
-      });
-    }
+      devTab.browseWindow[windows.id] = key;
+    });
   },
 
   saveLinks: function(links, reqType){
@@ -33,7 +31,7 @@ var devTab = {
       windows_list.forEach(function(window){
 
         if(window.incognito){
-          let key = window.id;
+          let key;
           let tempLinks = {}, nameLinks = "";
 
           window.tabs.forEach(function(tab){
@@ -41,14 +39,15 @@ var devTab = {
             nameLinks += tab.title + "\n";
           });
 
-          if(key in devTab.browseWindow) key = devTab.browseWindow[key];
+          if(window.id in devTab.browseWindow) key = devTab.browseWindow[window.id];
           else{
             if(reqType === 'nameSave')
               key = prompt(nameLinks + "\nEnter Window Name for above mentioned links");
             if(!key) key = randomWordGenerator();
           }
 
-          links[key] = tempLinks;
+          if(links[key]) links[key] = {...links[key], ...tempLinks};
+          else links[key] = tempLinks;
           chrome.windows.remove(window.id);
         }
 

@@ -1,31 +1,32 @@
 <!DOCTYPE html>
 <html>
 <body>
-	<div class="header">
-		<button class="unlock rightPosBtn" id="editBtn">Edit</button>
-		<button class="unlock" id="settingBtn">Setting</button>
-
-		<button class="settingMenu rightPosBtn" id="home">Home</button>
+	<div id="unlock">
+		<div id="header">
+			<img id="settingBtn" src="assets/hamburger.svg" alt="Setting Menu">
+			<img id="addBtn" src="assets/add-icon.svg" alt="Edit">
+		</div>
+		<div id='container'></div>
+		<div id='settingPage'></div>
+		<footer id="footer">
+			<select id="windowKey"></select>
+			<button id="home">Home</button> <br/>
+				<button id="fastSave">Fast Save</button>
+				<button id="nameSave">Save</button>
+				<button id="browse">Browse</button>
+				<button id="unlockBtn">Lock</button>
+		</footer>
 	</div>
 
-	<div class="unlock" id="container"> </div>
-	<div class="settingMenu" id="settingPage"> </div>
-
-	<form class="lock">
-		<p id="lockMsg"> </p> <br/>
-		<input type="password" id="lockIn" placeholder="Enter Password"> <br/>
+	<form id="lock">
+		<p id="lockMsg"> </p> <br>
+		<input type="password" id="lockIn" placeholder="Enter Password"> <br>
 		<button type="button" id="lockBtn">Unlock</button>
 	</form>
 
-	<footer class="unlock" id="footer">
-		<button id="fastSave">Fast Save</button>
-		<button id="nameSave">Save</button>
-		<button id="browse">Browse</button>
-		<button id="unlockBtn">Lock</button>
-	</footer>
+	<script type="text/javascript" src="popupScript/popup.js"></script>
+	<script type="text/javascript" src="popupScript/setting.js"></script>
+	<link rel="stylesheet" type="text/css" href="assets/style.css">
 </body>
 
-<script type="text/javascript" src="popupScript/popup.js"></script>
-<script type="text/javascript" src="popupScript/setting.js"></script>
-<link rel="stylesheet" type="text/css" href="assets/style.css">
 </html>

@@ -1,48 +1,74 @@
-function displaySetter(defStyle) {
-  for (key in defStyle) {
-    document.querySelectorAll(key).forEach((item) => {
-      item.style.display = defStyle[key]
-    });
-  }
-}
-
-function EventHandler(PointerEvent){
-  fn = PointerEvent.target.id;
-  if(fn in setting){
-    setting[fn]();
-  }
-}
-
-var data = {
-  'downloadLinks': {'name': 'Download', 'label': 'Download Links'},
-  'downloadConfig': {'name': 'Download', 'label': 'Download Config'},
-  'initPurgeAll': {'name': 'Purge All', 'label': 'Clear All Data'},
-  'initConfPurge': {'name': 'Clear', 'label': 'Clear Config'},
-  'initLinksPurge': {'name': 'Clear', 'label': 'Clear Links'},
-  'setPass': {'name': 'Set Password', 'label': 'Set Password'}
-}
+var console = chrome.extension.getBackgroundPage().console;
 
 var setting = {
-  init: function(){
-    displaySetter({ '.unlock': 'none', '.settingMenu': 'block' });
-
-    setting.menuSetter();
+  EventHandler: function(PointerEvent){
+    // console.log(PointerEvent.path[2].cells[0].innerText, PointerEvent.path);
+    fn = PointerEvent.target.id;
+       if(fn in setting){
+        setting[fn]();
+      }
+      else if(fn in popup){
+        popup[fn]();
+      }
   },
 
-  menuSetter: function(){
-    var element = document.getElementById('settingPage');
-    element.innerHTML += `<table id='menuTable'> </table>`;
-    var table = document.getElementById('menuTable');
+  fastSave: function(){
+    chrome.runtime.sendMessage({'fn': 'saveLinks', reqType: 'fastSave'});
+  },
 
-    for(btn in data){
-      table.innerHTML += `<tr> <td> <label>${data[btn].label}</label> </td>
-        \ <td> <button id="${btn}">${data[btn].name}</button> </td> </tr>`
+  nameSave: function(){
+    chrome.runtime.sendMessage({'fn': 'saveLinks', reqType: 'nameSave'});
+  },
+
+  browse: function(){
+    var links = [];
+    var checkEle = document.getElementById('container').getElementsByTagName('input');
+    var select = document.getElementById('windowKey');
+    var key = select.options[select.selectedIndex].value;
+
+    for(ele of checkEle){
+      if(ele.checked && ele.id != 'checkSelector') links.push(ele.id);
+    }
+
+    chrome.runtime.sendMessage({fn: "tabCreation", key: key, selectedLinks: links});
+  },
+
+  setPass: function() {
+    var pass = prompt("Enter Password");
+    if(pass){
+      var confPass = prompt("Re-enter Password");
+      if(pass != confPass){
+        alert("Password not Matching");
+        return;
+      }
+      
+      chrome.runtime.sendMessage({fn: "changeConfig", type: "setPass", val: pass});
     }
   },
 
-  home: function(){
-    displaySetter({ '.settingMenu': 'none', '.unlock': 'block' });
-    document.getElementById('settingPage').innerHTML = '';
+  changePass: function(){
+    var pass = prompt("Enter Current Password");
+    chrome.runtime.sendMessage({fn: "passCheck", pass: pass}, (response) => {
+      if(response.status === 404) {
+        alert("Wrong Password");
+        return;
+      }
+
+      let newPass = prompt("Enter Your New Password");
+      chrome.runtime.sendMessage({fn: "changeConfig", type: "changePass", val: newPass});
+    });
+  },
+
+  removePass: function(){
+    var pass = prompt("Enter Your Password");
+    chrome.runtime.sendMessage({fn: "passCheck", pass: pass}, (response) => {
+      if(response.status === 404){
+        alert("Wrong Password");
+        return;
+      }
+
+      chrome.runtime.sendMessage({fn: "changeConfig", type: "removePass"});
+    });
   },
 
   downloadLinks: function(){
@@ -76,19 +102,9 @@ var setting = {
   initLinksPurge: function(){
     var conf = confirm("Do you wish to Continue");
     if(conf)  chrome.runtime.sendMessage({fn: "purgeReq", data: ['links']});
-  },
-
-  setPass: function(){
-    var pass = prompt("Enter New Password");
-    var confPass;
-    if(pass){
-      confPass = prompt("Re-enter New Password");
-      if(pass === confPass){
-        chrome.runtime.sendMessage({fn: "changeConfig", var: "password", val: pass});
-      }
-    }
   }
 }
 
-document.getElementById('settingBtn').addEventListener('click', setting.init);
-document.addEventListener('click', EventHandler);
+document.addEventListener('DOMContentLoaded', popup.init);
+document.addEventListener('click', setting.EventHandler);
+document.getElementById('windowKey').addEventListener('change', popup.displayLinks);
