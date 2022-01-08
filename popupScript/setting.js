@@ -2,7 +2,6 @@ var console = chrome.extension.getBackgroundPage().console;
 
 var setting = {
   EventHandler: function(PointerEvent){
-    // console.log(PointerEvent.path[2].cells[0].innerText, PointerEvent.path);
     fn = PointerEvent.target.id;
        if(fn in setting){
         setting[fn]();
@@ -10,6 +9,13 @@ var setting = {
       else if(fn in popup){
         popup[fn]();
       }
+  },
+
+  keyPress: function(event){
+    if(event.keyCode == 13){
+      event.preventDefault();
+      popup.lockBtn();
+    }
   },
 
   fastSave: function(){
@@ -41,7 +47,7 @@ var setting = {
         alert("Password not Matching");
         return;
       }
-      
+
       chrome.runtime.sendMessage({fn: "changeConfig", type: "setPass", val: pass});
     }
   },
@@ -49,7 +55,7 @@ var setting = {
   changePass: function(){
     var pass = prompt("Enter Current Password");
     chrome.runtime.sendMessage({fn: "passCheck", pass: pass}, (response) => {
-      if(response.status === 404) {
+      if(response.status === 401) {
         alert("Wrong Password");
         return;
       }
@@ -62,7 +68,7 @@ var setting = {
   removePass: function(){
     var pass = prompt("Enter Your Password");
     chrome.runtime.sendMessage({fn: "passCheck", pass: pass}, (response) => {
-      if(response.status === 404){
+      if(response.status === 401){
         alert("Wrong Password");
         return;
       }
@@ -108,3 +114,4 @@ var setting = {
 document.addEventListener('DOMContentLoaded', popup.init);
 document.addEventListener('click', setting.EventHandler);
 document.getElementById('windowKey').addEventListener('change', popup.displayLinks);
+document.getElementById('lockIn').addEventListener('keydown', setting.keyPress);

@@ -13,20 +13,39 @@ var settingMenu = {
   //'devMode': {'name': 'Developer Mode'}
 };
 
-function displayChange(defStyle) {
-  for (key in defStyle) {
-    document.getElementById(key).style.display = defStyle[key];
+function displayChange(status) {
+  let unlock = document.getElementById('unlock').style;
+  let lock = document.getElementById('lock').style
+  let body = document.getElementsByTagName('body')[0].style;
+
+  try{
+    if(status === 'unlock'){
+      unlock.display = 'block';
+      lock.display = 'none';
+
+      body.height = '500px';
+      body.width = '450px';
+    }
+
+    else{
+      lock.display = 'block';
+      unlock.display = 'none';
+
+      body.height = '300px';
+      body.width = '250px';
+    }
+  } catch(err){
+    console.error(err);
   }
 }
 
 var popup = {
   init: function(){
     chrome.runtime.sendMessage({fn: "getStatus"}, function(response){
-
-      if(response.status === 401) displayChange({ 'lock': 'block', 'unlock': 'none' });
+      if(response.status === 401) displayChange('lock');
 
       else if(response.status === 200){
-        displayChange({ 'unlock': 'block', 'lock': 'none' });
+        displayChange('unlock');
         popup.displaySetter(response.reqProp);
       }
     });
@@ -95,6 +114,14 @@ var popup = {
     document.getElementById('settingPage').style.width = "100%";
   },
 
+  addBtn: function(){
+    document.getElementById("addPage").style.height = "100%";
+  },
+
+  closeAddPage: function(){
+    document.getElementById("addPage").style.height = 0;
+  },
+
   checkSelector: function(){
     var bool = document.getElementById('checkSelector').checked;
     var checkEle = document.getElementsByTagName('input');
@@ -109,7 +136,8 @@ var popup = {
 
     document.getElementById('container').innerHTML = '';
     document.getElementById('lockMsg').innerHTML = '';
-    displayChange({ 'unlock': 'none', 'lock': 'block' });
+    document.getElementById('settingPage').innerHTML = '';
+    displayChange('lock');
   },
 
   lockBtn: function(){
@@ -118,7 +146,7 @@ var popup = {
 
     chrome.runtime.sendMessage({ fn: 'lockToggler', reqType: 'unlock', pass: pass }, function (response) {
       if (response.status === 200) {
-        displayChange({ 'unlock': 'block', 'lock': 'none' });
+        displayChange('unlock');
         popup.displaySetter(response.reqProp);
       }
       else {

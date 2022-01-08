@@ -1,13 +1,16 @@
-## What it is:
-  A chrome extension.
+## Dev thoughts
+Finally completed basic version of the once imagined extension. This push marks the Ver 1.0 of the extension with not a confirmed name so it will temporarily go by "Null".
 
-## Where does it work:
-  Only work with chrome or chromium browsers.
+I have list of features for future updates and will try to push the updates as soon as possible.
 
-## How to use:
-When you want to browse already saved links simply select them and click "browse" button and it will open them depending upon windows and tabs. When you want to close and save   the current session simply click "save" button and when you again click on extension icon you can see their name.
+This push is mainly meant for the rectification of the bugs in previous push. 
 
-## How to install:<br/>
-  - Go to extension setting in your browser.<br/>
-  - Then enable developer mode.<br/>
-  - Click on load unpacked and select the folder named "sample-extension" and voila now you can use the extension.
+# Note:
+After [unpacking extension](https://webkul.com/blog/how-to-install-the-unpacked-extension-in-chrome/) (from github), go to details of the extension and allow the feature "Allow in Private" for proper working of the extension.
+
+## Purpose:
+Works as a sort of bookmark in private mode of browser.
+
+You can browse in private mode and if you want to store your session just simply save it.
+
+If you want open your previous session or part of links from that session select accordingly, click browse and voila.

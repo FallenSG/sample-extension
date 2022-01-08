@@ -1,13 +1,22 @@
+async function hasher(message) {
+	const msgUint8 = new TextEncoder().encode(message);                           // encode as (utf-8) Uint8Array
+	const hashBuffer = await crypto.subtle.digest('SHA-512', msgUint8);           // hash the message
+	const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
+	const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
+	return hashHex;
+}
+
 class Bkgd{
 	#resFunc = {
 		links: {},
 		config: {},
 
 		passCheck: function(request, sender, sendResponse){
-			let code = 404;
-			if(request.pass === this.config.password) code = 200;
-
-			sendResponse({status: code});
+			let code = 401;
+			hasher(request.pass).then((hash) => {
+				if(hash === this.config.password) code = 200;
+				sendResponse({status: code});
+			});
 		},
 
 		purgeReq: function(request, sender, sendResponse){
@@ -18,22 +27,23 @@ class Bkgd{
 		},
 
 		changeConfig: function(request, sender, sendResponse){
-			if(request.type === 'setPass'){
-				this.config['password'] = request.val;
-				this.config['isLocked'] = true;
-			}
+			return new Promise( (resolve, reject) => {
+				if(request.type === 'setPass' || request.type === 'changePass'){
+					hasher(request.val).then((hash) => {
+						this.config['password'] = hash;
+						this.config['isLocked'] = true;
+						resolve(this.config);
+					});
+				}
 
-			else if(request.type === 'changePass'){
-				this.config['password'] = request.val;
-				this.config['isLocked'] = true;
-			}
-
-			else if(request.type === 'removePass'){
-				this.config['password'] = '';
-				this.config['isLocked'] = false;
-			}
-
-			devStorage.varSet({'config': this.config});
+				else if(request.type === 'removePass'){
+					this.config['password'] = '';
+					this.config['isLocked'] = false;
+					resolve(this.config);
+				}
+			}).then(result => {
+				devStorage.varSet({'config': result});
+			});
 		},
 
 		getWindowLinks: function(request, sender, sendResponse){
@@ -41,7 +51,7 @@ class Bkgd{
 
 			if(info) sendResponse({status: 200, reqLink: info});
 			else sendResponse({status: 404});
-		},	
+		},
 
 		saveLinks: function(request, sender, sendResponse) {
 			//callStack: nameSave/fastSave(setting.js).
@@ -64,16 +74,16 @@ class Bkgd{
 					openingLinks.push(this.links[key][val]);
 					delete this.links[key][val];
 				}
-				
+
 				if(Object.keys(this.links[key]).length === 0){
 					delete this.links[key];
 				}
-				
+
 				devTab.tabCreation(openingLinks, key);
 			} catch(err){
 				console.log(err);
 			}
-			
+
 		}
 	}
 
@@ -101,6 +111,7 @@ class Bkgd{
 			else if(request.fn in proto){
 				this[request.fn](request, sender, sendResponse);
 			}
+			return true; //meant for keeping msging port open even in case of async functions.
 		});
 	}
 
@@ -109,7 +120,7 @@ class Bkgd{
 		let passSet = this.#resFunc.config.password === '';
 
 		return { status: 200, reqProp: {
-			keyVal: keyVal, 
+			keyVal: keyVal,
 			passSet: passSet
 			//extendable if more property based features are added.
 		} };
@@ -128,11 +139,13 @@ class Bkgd{
 	lockToggler(request, sender, sendResponse){
 		if(request.reqType === "lock") this.#resFunc.config.isLocked = true;
 		else {
-			if(request.pass === this.#resFunc.config.password){
-				this.#resFunc.config.isLocked = false;
-				sendResponse(this.infoConstructor());
-			}
-			sendResponse({status: 401});
+		  hasher(request.pass).then((hash) => {
+				if(hash === this.#resFunc.config.password){
+					this.#resFunc.config.isLocked = false;
+					sendResponse(this.infoConstructor());
+				}
+				sendResponse({status: 401});
+			});
 		}
 	}
 }

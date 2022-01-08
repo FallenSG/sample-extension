@@ -1,130 +1,139 @@
 body {
-	height: 500px;
-	width: 450px;
-	max-height: 500px;
-	max-width: 450px;
-	overflow-x: hidden;
-	font-family: monospace;
-	font-size: 14px;
-	margin: 0;
+	 height: 500px;
+	 width: 450px;
+	 max-height: 500px;
+	 max-width: 450px;
+	 overflow-x: hidden;
+	 font-family: monospace;
+	 font-size: 14px;
+	 margin: 0;
 }
-
-#footer {
-	position: fixed;
-	text-align: center;
-	outline: none;
-	padding: 1% 0 1% 0;
-	bottom: 0;
-	left: 0;
-	background-color: #def2f1;
-	width: 100%;
-	font-size: 15px;
+ #footer {
+	 position: fixed;
+	 text-align: center;
+	 outline: none;
+	 padding: 1% 0 1% 0;
+	 bottom: 0;
+	 left: 0;
+	 background-color: cyan;
+	 width: 100%;
+	 font-size: 15px;
 }
-
-#footer select {
-	font: inherit;
-	outline: none;
-	text-align: center;
-	width: 60%;
-	height: 25px;
-	margin: 1% 0 1% 0;
-	border-radius: 5px;
+ #footer select {
+	 font: inherit;
+	 outline: none;
+	 text-align: center;
+	 width: 60%;
+	 height: 25px;
+	 margin: 1% 0 1% 0;
+	 border-radius: 5px;
 }
-
-#footer button {
-	font: inherit;
-	border-radius: inherit;
-	outline: none;
-	border: 1px;
-	border-radius: 5px;
-	background: #17252a;
-	color: #ffffff;
+ #footer button {
+	 font: inherit;
+	 border-radius: inherit;
+	 outline: none;
+	 border: 1px;
+	 border-radius: 5px;
+	 background: #17252a;
+	 color: #ffffff;
 }
-
-#settingPage {
-	text-align: center;
-	overflow-x: hidden;
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 0;
-	height: 100%;
-	z-index: 1;
-	background-color: orange;
-	transition: 0.5s;
+ #settingPage {
+	 text-align: center;
+	 overflow-x: hidden;
+	 position: fixed;
+	 top: 0;
+	 left: 0;
+	 width: 0;
+	 height: 100%;
+	 z-index: 1;
+	 background-color: #1f221d;
+	 transition: 0.5s;
 }
-
-#settingPage a {
-	cursor: pointer;
-	text-decoration: none;
-	display: block;
-	padding: 8px 8px 8px 32px;
-	border-bottom: 1px solid;
-	border-bottom-right-radius: 40px;
-	font-size: 25px;
-	color: #F5F5F5;
-	transition: 0.3s;
+ #settingPage a {
+	 cursor: pointer;
+	 text-decoration: none;
+	 display: block;
+	 padding: 8px 8px 8px 32px;
+	 border-bottom: 1px solid;
+	 border-bottom-right-radius: 40px;
+	 font-size: 25px;
+	 color: #F5F5F5;
+	 transition: 0.3s;
 }
-
-#settingPage a:hover {
-	color: #00ffa5;
+ #settingPage a:hover {
+	 color: #00ffa5;
 }
-
-#settingPage #closeBtn {
-	position: -webkit-sticky;
-	position: sticky;
-	z-index: 100;
-	top: 0;
-	border-radius: 0 0 0 40px;
-	font-size: 35px;
-	background-color: #EFDCF9;
-	color: #323E42;
+ #settingPage #closeBtn {
+	 position: -webkit-sticky;
+	 position: sticky;
+	 z-index: 100;
+	 top: 0;
+	 border-radius: 0 0 0 40px;
+	 font-size: 35px;
+	 background-color: #EFDCF9;
+	 color: #323E42;
 }
-
-#header {
-	width: inherit;
-	padding-top: 1%;
-	margin-bottom: 3%;
-	background-color: #def2f1;
+ #header {
+	 width: inherit;
+	 padding-top: 1%;
+	 margin-bottom: 3%;
+	 background-color: cyan;
 }
-
-#header #settingBtn {
-	padding-left: 1%;
+ #header #settingBtn {
+	 padding-left: 1%;
 }
-
-#header #addBtn {
-	position: absolute;
-	right: 1%;
+ #header #addBtn {
+	 position: absolute;
+	 right: 1%;
 }
-
-#container {
-	overflow-x: hidden;
-	height: inherit;
-	width: inherit;
-	padding: 1% 0 20% 0;
+ #container {
+	 overflow-x: hidden;
+	 height: inherit;
+	 width: inherit;
+	 padding: 1% 0 20% 0;
 }
-
-#container #displayTable {
-	table-layout: fixed;
-	word-wrap: break-word;
-	width: 100%;
-	height: 100%;
+ #container #displayTable {
+	 table-layout: fixed;
+	 word-wrap: break-word;
+	 width: 100%;
+	 height: 100%;
 }
-
-#container #displayTable th:nth-child(even),
-#container #displayTable td:nth-child(even) {
-	width: 10%;
-	text-align: center;
+ #container #displayTable th:nth-child(even), #container #displayTable td:nth-child(even) {
+	 width: 10%;
+	 text-align: center;
 }
-
-#lock{
-	position: absolute;
-	top: 40%;
-	left: 50%;
-	transform: translate(-50%, -50%);
+ #lock {
+	 position: absolute;
+	 top: 40%;
+	 left: 50%;
+	 transform: translate(-50%,-50%);
 }
-
-#lock button{
-	margin-top: 5%;
-	/*align-content: center;*/
+ #lock input {
+	 text-align: center;
+	 outline: none;
 }
+ #lock button {
+	 margin-top: 5%;
+	 transform: translate(80%,50%);
+}
+ #addPage {
+	 height: 0;
+	 width: 100%;
+	 position: fixed;
+	 z-index: 1;
+	 left: 0;
+	 top: 0;
+	 background-color: #000000;
+	 background-color: rgba(0,0,0,0.8);
+	 overflow-y: hidden;
+	 transition: 0.5s;
+}
+ #addPage #leftPanel {
+	 height: inherit;
+	 width: 10%;
+	 background-color: black;
+}
+ #addPage #rightPanel {
+	 padding-left: 10%;
+}
+ 
