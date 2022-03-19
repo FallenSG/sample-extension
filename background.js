@@ -8,6 +8,7 @@ async function hasher(message) {
 
 class Bkgd{
 	#resFunc = {
+		frameId: {"currFrame": "pubMode", 'prevFrame': ''},
 		links: {},
 		config: {},
 
@@ -96,6 +97,12 @@ class Bkgd{
 		//Invokes certain function necessary for proper working of extension.
 		//Also acts as listener for any messages and executes function
 		//according to it.
+		try {
+			importScripts('/devJs/devStorage.js', '/devJs/devTab.js');
+		} catch (e) {
+			console.error(e);
+		}
+
 		devStorage.init((items) => {
 			this.#resFunc.config = items.config;
 			this.#resFunc.links = items.links;
@@ -116,19 +123,37 @@ class Bkgd{
 	}
 
 	infoConstructor(){
+		//changes arguments depending upon call.
 		let keyVal = Object.keys(this.#resFunc.links);
 		let passSet = this.#resFunc.config.password === '';
 
 		return { status: 200, reqProp: {
 			keyVal: keyVal,
-			passSet: passSet
+			passSet: passSet,
+			mode: ''
 			//extendable if more property based features are added.
 		} };
+	}
+
+	frameToggler(request, sender, sendResponse){
+		//send frame to be shown.
+		if(request.reqType === 'set' && request.frameId !== this.#resFunc.frameId.currFrame){
+			let frameId = {'currFrame': request.frameId};
+			frameId['prevFrame'] = this.#resFunc.frameId.currFrame;
+			this.#resFunc.frameId = frameId;
+		} 
+
+		sendResponse({
+			status: 200, frameId: this.#resFunc.frameId
+		});
 	}
 
 	getStatus(request, sender, sendResponse){
 		//callStack: init(popup.js)
 		//Purpose: to send this.links as response.
+
+		//needs change for timestamp comparison and many more
+		//also need to send frame to be displayed.
 		if(this.#resFunc.config.isLocked){
 			sendResponse({status: 401});
 		} else{
@@ -142,6 +167,10 @@ class Bkgd{
 		  hasher(request.pass).then((hash) => {
 				if(hash === this.#resFunc.config.password){
 					this.#resFunc.config.isLocked = false;
+					//set timestamp of when unlocked.
+					//response is changed from info to ackg of password recieved
+					//whether it is wrong or right so, basically remove this one
+					//and update last one.
 					sendResponse(this.infoConstructor());
 				}
 				sendResponse({status: 401});

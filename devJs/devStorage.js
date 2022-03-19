@@ -30,7 +30,10 @@ var defConfig = {
     'isLocked': false,
     'password': ""
   },
-  'links': {}
+  'links': {
+      // 'pubLinks': {},
+      // 'privLinks': {}
+  }
 };
 
 var devStorage = {

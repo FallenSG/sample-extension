@@ -1,4 +1,4 @@
-var console = chrome.extension.getBackgroundPage().console;
+// var console = chrome.extension.getBackgroundPage().console;
 
 function randomWordGenerator(){
   //callStack: saveLinks(devTab.js)
@@ -44,6 +44,13 @@ var devTab = {
             if(reqType === 'nameSave')
               key = prompt(nameLinks + "\nEnter Window Name for above mentioned links");
             if(!key) key = randomWordGenerator();
+
+            let counter = 0, fname = key;
+            while(fname in links){
+              counter++;
+              fname = `${key}${counter}`;
+            }
+            key = fname;
           }
 
           if(links[key]) links[key] = {...links[key], ...tempLinks};
