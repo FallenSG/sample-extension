@@ -2,8 +2,8 @@ var msgFormat = {
     'keyVal': {},
     'mode': '',
     'passSet': '',
-    'reqLinks': {},
-    'reqProp': {},
+    'passSet': '',
+    'timestamp': '',
     'statusCode': '',
     'statusMsg': '',
     'fn': '',
@@ -14,5 +14,7 @@ var msgFormat = {
         'pass': '',
         'data': '',
         'windowKeyVal': ''
-    }
+    },
+    'frameId': '',
+    'reqLink': {}
 }

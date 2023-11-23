@@ -3,10 +3,10 @@
 var frame = {
     init: function () {
         //extra func to send a msg to bkgd.js   
-        chrome.runtime.sendMessage({fn: 'getStatus'}, function(response){
+        chrome.runtime.sendMessage({fn: 'getStatus'}, function(response){            
             if(response.status === 401) frame.postMsg('lockPage');
 
-            else if(response.status === 200) frame.displaySetter(response.reqProp);
+            else if(response.status === 200) frame.displaySetter(response.keyVal);
         });
     },
 
@@ -25,14 +25,35 @@ var frame = {
             frame[btnId]();
         }
 
-        else if(btnId === 'lockPage' || btnId === 'pubMode' || btnId ==='settingBtn'){
+        else if(btnId === 'lockPage' || btnId === 'pubMode' || btnId ==='settingBtn' || btnId === "editPage"){
             frame.postMsg(btnId);
         }
 
-        else if(btnId === 'fastSave' || btnId === 'save' || btnId === 'saveAll'){
+        else if(btnId === 'fastSave' || btnId === 'saveAll'){
             chrome.runtime.sendMessage({
                 fn: 'saveLinks', reqType: btnId 
             });
+        }
+
+        else if(btnId === "save"){
+            var dlgIp = ""
+            var dialog = document.getElementById('dialogBox')
+            dialog.show();
+
+            document.getElementById("dlgBtn").onclick = function(){
+                console
+                chrome.runtime.sendMessag({ fn: "isTabActive" }, function(resp){
+                    console.log(resp.activeTab);
+                });
+                // dialog.close();
+                // dlgIp = document.getElementById('dlgIp');
+                // console.log(dlgIp);
+            }
+            
+        }
+
+        else if(btnId === "saveColl"){
+
         }
     },
 
@@ -43,19 +64,19 @@ var frame = {
         var key = select.options[select.selectedIndex].value;
 
         for(ele of checkEle){
-        if(ele.checked && ele.id != 'checkSelector') links.push(ele.id);
+            if(ele.checked && ele.id != 'checkSelector') links.push(ele.id);
         }
 
         chrome.runtime.sendMessage({fn: "tabCreation", key: key, selectedLinks: links});
     },
 
-    displaySetter: function (reqProp) {
+    displaySetter: function (keyVal) {
         //selectSetter
         container.innerHTML = 'Let Get Started !!!';
         let sel = document.getElementById('windowKey');
 
         sel.innerHTML = '<option>----Select a Window----</option>'
-        for (val of reqProp.keyVal) {
+        for (val of keyVal) {
             sel.innerHTML += `<option value='${val}'>${val}</option>`;
         }
     },
@@ -81,21 +102,21 @@ var frame = {
         let cont = document.getElementById('container');
         cont.innerHTML = '';
 
-        chrome.runtime.sendMessage({fn: 'getWindowLinks', windowKeyVal: val}, function(response){
-            if(response.status === 404){
-            cont.innerHTML = "Lets Get Started !!!";
+        chrome.runtime.sendMessage({fn: 'getWindowLinks', windowKeyVal: val}, function(resp){
+            if(resp.status === 404){
+                cont.innerHTML = "Lets Get Started !!!";
             }
 
             else{
-            cont.innerHTML += '<table id="displayTable"></table>'
-            let table = document.getElementById('displayTable');
-            table.innerHTML = '<tr> <th></th> \
-                <th> <input id="checkSelector" type="checkbox"> </th> </tr>'
+                cont.innerHTML += '<table id="displayTable"></table>'
+                let table = document.getElementById('displayTable');
+                table.innerHTML = '<tr> <th></th> \
+                    <th> <input id="checkSelector" type="checkbox"> </th> </tr>'
 
-            for(title in response.reqLink){
-                table.innerHTML += `<tr> <td> ${title} </td> \
-                <td> <input id="${title}" type='checkbox'> </td> </tr>`
-            }
+                for(let key in resp.reqLink){
+                    table.innerHTML += `<tr> <td> ${resp.reqLink[key][0]} </td> \
+                    <td> <input id="${key}" type='checkbox'> </td> </tr>`
+                }
             }
         });
     }

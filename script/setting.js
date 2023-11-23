@@ -2,14 +2,23 @@
 
 var settingMenu = {
   'closeBtn': { 'name': '&times;' },
-  'downloadLinks': { 'name': 'Download Links' },
-  'downloadConfig': { 'name': 'Download Config' },
-  'initPurgeAll': { 'name': 'Purge All Data' },
-  'initConfPurge': { 'name': 'Clear Config' },
-  'initLinksPurge': { 'name': 'Clear Links' },
-  'setPass': { 'name': 'Set Password', 'prop': { 'passSet': true, 'mode': 'privMode' } },
-  'changePass': { 'name': 'Change Password', 'prop': { 'passSet': false, 'mode': 'privMode' } },
-  'removePass': { 'name': 'Remove Password', 'prop': { 'passSet': false, 'mode': 'privMode' } },
+  'linksPrtSetting': { 'name': 'Links Setting', 'childBtn': {
+    'downloadLinks': { 'name': 'Download Links' },
+    'initLinksPurge': { 'name': 'Clear Links' }
+  }},
+  
+  'configPrtSetting': { 'name': 'Config Setting', 'childBtn': {
+    'downloadConfig': { 'name': 'Download Config' },
+    'initConfPurge': { 'name': 'Clear Config' }
+  }}, 
+  
+  'initPurgeAll': { 'name': 'Purge All Data', 'prop': { 'mode': 'privMode' } },
+
+  'passPrtSetting': { 'name': 'Password Setting', 'prop': {'mode': 'privMode'}, 'childBtn': {
+    'setPass': { 'name': 'Set Password', 'prop': { 'passSet': true } },
+    'changePass': { 'name': 'Change Password', 'prop': { 'passSet': false } },
+    'removePass': { 'name': 'Remove Password', 'prop': { 'passSet': false } }
+  }},
   'addBtn': { 'name': 'Add Links' }
   //'devMode': {'name': 'Developer Mode'}
 };
@@ -17,6 +26,14 @@ var settingMenu = {
 class setting {
   #resFunc = {
     origFrame: "",
+
+    toggleDispStyle: function(elem) { 
+      let element = document.getElementById(elem);
+      let dispStyle = 'block';
+
+      if(element.style.display === 'block') dispStyle = 'none';
+      element.style.display = dispStyle;
+    },
 
     setPass: function () {
       var pass = prompt("Enter Password");
@@ -98,22 +115,57 @@ class setting {
       if (conf) chrome.runtime.sendMessage({ fn: "purgeReq", data: ['links'] });
     },
 
+    linksPrtSetting: function() {
+      this.toggleDispStyle('linksPrtSettingDiv');
+    }, 
+    
+    configPrtSetting: function() {
+      this.toggleDispStyle('configPrtSettingDiv');
+    }, 
+    
+    passPrtSetting: function() {
+      this.toggleDispStyle('passPrtSettingDiv');
+    },
+
     displaySetter: function (reqProp) {
       //menuSetter
       //this js file will contain list of all setting btn
       //  and this func will set the menu depending upon status of extension.
       var element = document.getElementById('settingPage');
       for (let fn in settingMenu) {
-        let prop = settingMenu[fn].prop;
-        if (prop) {
-          for (let val in prop) {
-            if (val in reqProp && prop[val] === reqProp[val]) {
-              element.innerHTML += `<a id="${fn}">${settingMenu[fn].name}</a> <br/>`;
-            }
+        this.estbElement(fn, settingMenu[fn], element, reqProp);
+      }
+    },
+
+    estbElement: function(fn, elem, elemBlock, reqProp){
+      let prop = elem.prop;
+      let isValidElem = true;
+
+      if(prop){
+        for(let val in prop){
+          if(prop[val] !== reqProp[val]){
+            isValidElem = false;
+            break;
           }
         }
-        else {
-          element.innerHTML += `<a id="${fn}">${settingMenu[fn].name}</a> <br/>`;
+      }
+
+      if(isValidElem){
+        if(elem.childBtn){
+          elemBlock.innerHTML += `<a id="${fn}">${elem.name}</a> <br/>`;
+
+          elemBlock.innerHTML += `<div id="${fn}Div" class="settingChildDiv"></div>`;
+          let divBlock = document.getElementById(`${fn}Div`);
+
+          for(let childFn in elem.childBtn){
+            this.estbElement(childFn, elem.childBtn[childFn], divBlock, reqProp);
+          }
+
+        }
+
+        else{
+          console.log(elem);
+          elemBlock.innerHTML += `<a id="${fn}">${elem.name}</a> <br/>`;
         }
       }
     }
@@ -135,7 +187,7 @@ class setting {
     chrome.runtime.sendMessage({fn: 'getStatus'}, (response) => {
       // if(response.status === 401){}
       // else if(response.status === 200){
-        this.#resFunc.displaySetter(response.reqProp);
+        this.#resFunc.displaySetter(response);
       // }
     });
   }

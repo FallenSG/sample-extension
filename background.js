@@ -11,12 +11,32 @@ class Bkgd{
 		frameId: {"currFrame": "pubMode", 'prevFrame': ''},
 		links: {},
 		config: {},
+		lastVisit: 0,
+		parentTab: null,
+
+		infoConstructor: function(keyVal) {
+			var msg = msgFormat;
+			//required fields
+			msg.mode = this.frameId.currFrame;
+			msg.passSet = this.config.password === '';
+			msg.timeStamp = this.lastVisit;
+
+			for (let key in keyVal) {
+				msg[key] = keyVal[key];
+			}
+
+			return msg;
+		},
 
 		passCheck: function(request, sender, sendResponse){
 			let code = 401;
+
 			hasher(request.pass).then((hash) => {
 				if(hash === this.config.password) code = 200;
-				sendResponse({status: code});
+				
+				sendResponse( this.infoConstructor({
+					status: code
+				}));
 			});
 		},
 
@@ -49,13 +69,16 @@ class Bkgd{
 
 		getWindowLinks: function(request, sender, sendResponse){
 			let info = this.links[request.windowKeyVal];
+			let msg = {};
 
-			if(info) sendResponse({status: 200, reqLink: info});
-			else sendResponse({status: 404});
+			if(info) msg = {status: 200, reqLink: info};
+			else msg = {status: 404};
+
+			sendResponse( this.infoConstructor(msg));
 		},
 
 		saveLinks: function(request, sender, sendResponse) {
-			//callStack: nameSave/fastSave(setting.js).
+			//callStack: saveAll/fastSave(setting.js).
 			//Purpose: to execute the saveLinks(devTab) function for saving links.
 			devTab.saveLinks(this.links, request.reqType);
 		},
@@ -72,7 +95,7 @@ class Bkgd{
 				var openingLinks = [];
 				let key = request.key;
 				for(let val of request.selectedLinks){
-					openingLinks.push(this.links[key][val]);
+					openingLinks.push(this.links[key][val][1]);
 					delete this.links[key][val];
 				}
 
@@ -85,6 +108,31 @@ class Bkgd{
 				console.log(err);
 			}
 
+		},
+
+		isTabActive: function(request, sender, sendResponse){
+			chrome.windows.getAll({ populate: true }, (windows_list) => {
+				windows_list.forEach((window) => {
+					if(window.id !== this.parentTab) 
+						sendResponse(this.infoConstructor({ activeTab: true }))
+				})
+				sendResponse(this.infoConstructor({ activeTab: false }));
+			});
+		},
+
+		renameLinks: function(request, sender, sendResponse){
+			devStorage.rename(this.links, request.keyVal, request.updLink)
+			sendResponse({ status: 200 })
+		},
+
+		deleteWindow: function(request, sender, sendResponse){
+			devStorage.deleteWindow(this.links, request.keyVal)
+			sendResponse({ status: 200 });
+		},
+
+		delLink: function(request, sender, sendResponse){
+			devStorage.delLink(this.links, request.data);
+			sendResponse({ status: 200 });
 		}
 	}
 
@@ -98,7 +146,7 @@ class Bkgd{
 		//Also acts as listener for any messages and executes function
 		//according to it.
 		try {
-			importScripts('/devJs/devStorage.js', '/devJs/devTab.js');
+			importScripts('/devJs/devStorage.js', '/devJs/devTab.js', '/script/msgFormat.js', 'exten_script.js');
 		} catch (e) {
 			console.error(e);
 		}
@@ -106,6 +154,7 @@ class Bkgd{
 		devStorage.init((items) => {
 			this.#resFunc.config = items.config;
 			this.#resFunc.links = items.links;
+			this.#resFunc.lastVisit = Date.now();
 		});
 
 		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -122,19 +171,6 @@ class Bkgd{
 		});
 	}
 
-	infoConstructor(){
-		//changes arguments depending upon call.
-		let keyVal = Object.keys(this.#resFunc.links);
-		let passSet = this.#resFunc.config.password === '';
-
-		return { status: 200, reqProp: {
-			keyVal: keyVal,
-			passSet: passSet,
-			mode: ''
-			//extendable if more property based features are added.
-		} };
-	}
-
 	frameToggler(request, sender, sendResponse){
 		//send frame to be shown.
 		if(request.reqType === 'set' && request.frameId !== this.#resFunc.frameId.currFrame){
@@ -143,37 +179,50 @@ class Bkgd{
 			this.#resFunc.frameId = frameId;
 		} 
 
-		sendResponse({
+		sendResponse( this.#resFunc.infoConstructor({
 			status: 200, frameId: this.#resFunc.frameId
-		});
+		}));
 	}
 
 	getStatus(request, sender, sendResponse){
 		//callStack: init(popup.js)
 		//Purpose: to send this.links as response.
 
-		//needs change for timestamp comparison and many more
 		//also need to send frame to be displayed.
-		if(this.#resFunc.config.isLocked){
-			sendResponse({status: 401});
+		//additonal if statement for checking time limit 
+		let msg = {};
+		let lastVisit = Date.now() - this.#resFunc.timeStamp;
+		let maxAllowTime = this.#resFunc.config.timeOff * 60;
+
+		//below if statement needs correction in the form that
+		//lastVisit > maxAllowTime should be checked only if password is set
+		//else this is a bug on the condition that it keeps taking you to 
+		//lockPage even though there is not password to compare it to.
+		
+		if(this.#resFunc.config.isLocked || lastVisit > maxAllowTime){
+			msg = { status: 401 }
 		} else{
-			sendResponse(this.infoConstructor());
+			this.#resFunc.lastVisit = Date.now();
+			let keyVal = Object.keys(this.#resFunc.links);
+			msg = { 'status': 200, 'keyVal': keyVal };
 		}
+
+		sendResponse ( this.#resFunc.infoConstructor(msg) )
 	}
 
 	lockToggler(request, sender, sendResponse){
 		if(request.reqType === "lock") this.#resFunc.config.isLocked = true;
 		else {
-		  hasher(request.pass).then((hash) => {
+			let statusCode = 401;
+		  	hasher(request.pass).then((hash) => {
 				if(hash === this.#resFunc.config.password){
 					this.#resFunc.config.isLocked = false;
+					statusCode = 200;
 					//set timestamp of when unlocked.
-					//response is changed from info to ackg of password recieved
-					//whether it is wrong or right so, basically remove this one
-					//and update last one.
-					sendResponse(this.infoConstructor());
 				}
-				sendResponse({status: 401});
+				sendResponse( this.#resFunc.infoConstructor({
+					status: statusCode
+				}));
 			});
 		}
 	}

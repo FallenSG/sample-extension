@@ -13,6 +13,10 @@ function randomWordGenerator(){
   return text;
 }
 
+function generateUniqueID() {
+  return Math.random().toString(36).substr(2, 9); // Example method to generate a random unique ID
+}
+
 var devTab = {
   browseWindow: {},
 
@@ -21,7 +25,6 @@ var devTab = {
       for(let i=1;i<links.length;i++){
         chrome.tabs.create({url: links[i], windowId: windows.id});
       }
-
       devTab.browseWindow[windows.id] = key;
     });
   },
@@ -35,14 +38,22 @@ var devTab = {
           let tempLinks = {}, nameLinks = "";
 
           window.tabs.forEach(function(tab){
-            tempLinks[tab.title] = tab.url;
+            let tabId = generateUniqueID()
+            while(tempLinks[tabId])
+              tabId = generateUniqueID()
+
+            tempLinks[tabId] = [tab.title, tab.url];
             nameLinks += tab.title + "\n";
           });
 
           if(window.id in devTab.browseWindow) key = devTab.browseWindow[window.id];
           else{
-            if(reqType === 'nameSave')
-              key = prompt(nameLinks + "\nEnter Window Name for above mentioned links");
+            if(reqType === 'saveAll'){
+              //used to create prompt taking name for the window
+              //but manifest v3 doesnt allow that.
+              //alternative is been researched.
+            }
+              // key = prompt(nameLinks + "\nEnter Window Name for above mentioned links");
             if(!key) key = randomWordGenerator();
 
             let counter = 0, fname = key;
@@ -61,5 +72,16 @@ var devTab = {
       });
       chrome.storage.local.set({'links': links});
     });
+  },
+
+  saveLinksNew: function(links, reqType){
+    //also needs to check mode type for changing the type of windows scoured through
+    if(reqType === 'save'){
+      chrome.window.getCurrent({});
+    }
+
+    else{
+      chrome.window.getAll({});
+    }
   }
 }

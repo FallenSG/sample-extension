@@ -28,7 +28,8 @@ function fileDataSetter(file, callback = function(){}){
 var defConfig = {
   'config': {
     'isLocked': false,
-    'password': ""
+    'password': "",
+    'timeOff': 1
   },
   'links': {
       // 'pubLinks': {},
@@ -88,6 +89,55 @@ var devStorage = {
     chrome.storage.local.get(data, function(items){
       console.log({msg: "Data Fetch Complete", dataVal: items});
     });
+  },
+
+  rename: function(links, keyVal, updLink){
+    //link renaming
+    for(key in updLink){
+      for(index in updLink[key]){
+        links[key][index][0] = updLink[key][index]
+      }
+    }
+
+    //link renaming end
+
+    //renaming windowName
+    for(oldKey in keyVal){
+      let newKey = keyVal[oldKey]
+
+      let counter = 0, fname = newKey;
+      while (fname in links) {
+        counter++;
+        fname = `${newKey}${counter}`;
+      }
+      newKey = fname;
+
+      links[newKey] = links[oldKey]
+      delete links[oldKey]; 
+    }
+    //windowName renaming ends here
+
+    devStorage.varSet({ 'links': links });
+  },
+
+  deleteWindow: function(links, keyVal){
+    keyVal.forEach((key) => {
+      if(key in links){
+        delete links[key];
+      }
+    })
+
+    devStorage.varSet({ "links": links })
+  },
+
+  delLink: function(links, data){
+    let elem = data.split('_');
+    delete links[elem[0]][elem[1]];
+
+    if(Object.keys(links[elem[0]]).length === 0)
+      delete links[elem[0]]
+
+    devStorage.varSet({ "links": links })
   }
 }
 
