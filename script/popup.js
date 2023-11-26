@@ -54,4 +54,4 @@ class popup {
   }
 }
 
-var obj = new popup();
+var obj = new popup(); 

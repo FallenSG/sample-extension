@@ -36,7 +36,18 @@ var defConfig = {
       // 'privLinks': {}
   }
 };
+/*
+  new structure
+  defAcc: {
+    config: { //wants to make *IsLocked redundant
+      pubIsLocked: false, pubPass:"", timeOff: 1
+      privIsLocked: false, privPass: "", timeOff: 1 
+    },
+    pubLinks: {},
+    privLinks: {}
+  }
 
+*/
 var devStorage = {
   init: function(callback = function(){}) {
     var setter = {}

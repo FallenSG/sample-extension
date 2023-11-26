@@ -44,8 +44,6 @@ class edit{
         },
 
         save: () => {
-            //unknown object is showing
-            //after a round of saving when further updating is done on that parent error.
             var keyVal = { };
             var updLink = { }
             var values = document.querySelectorAll('.regularInput');
