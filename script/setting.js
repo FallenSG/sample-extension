@@ -164,7 +164,6 @@ class setting {
         }
 
         else{
-          console.log(elem);
           elemBlock.innerHTML += `<a id="${fn}">${elem.name}</a> <br/>`;
         }
       }

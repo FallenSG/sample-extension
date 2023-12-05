@@ -20,8 +20,9 @@ function generateUniqueID() {
 var devTab = {
   browseWindow: {},
 
-  tabCreation: function(links, key){
-    chrome.windows.create({url: links[0], incognito: true}, function(windows){
+  tabCreation: function(mode, links, key){
+    mode = mode === 'private';
+    chrome.windows.create({url: links[0], incognito: mode}, function(windows){
       for(let i=1;i<links.length;i++){
         chrome.tabs.create({url: links[i], windowId: windows.id});
       }

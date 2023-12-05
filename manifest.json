@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Null",
-  "version": "1.0",
+  "version": "1.5",
   "action": {
     "default_popup": "popupPages/popup.html",
     "default_icon": "popupPages/assets/128.png"

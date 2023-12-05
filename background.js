@@ -6,9 +6,12 @@ async function hasher(message) {
 	return hashHex;
 }
 
+ 
 class Bkgd{
 	#resFunc = {
 		frameId: {"currFrame": "pubMode", 'prevFrame': ''},
+		acc: "",
+		mode: "public",
 		links: {},
 		config: {},
 		lastVisit: 0,
@@ -103,7 +106,8 @@ class Bkgd{
 					delete this.links[key];
 				}
 
-				devTab.tabCreation(openingLinks, key);
+				devTab.tabCreation(this.mode, openingLinks, key);
+				devStorage.updateSet(this.acc, this.mode, { "links": this.links });
 			} catch(err){
 				console.log(err);
 			}
@@ -142,9 +146,9 @@ class Bkgd{
 	}
 
 	constructor(){
-		//Invokes certain function necessary for proper working of extension.
+		//Invokes function necessary for proper working of extension.
 		//Also acts as listener for any messages and executes function
-		//according to it.
+
 		try {
 			importScripts('/devJs/devStorage.js', '/devJs/devTab.js', '/script/msgFormat.js', 'exten_script.js');
 		} catch (e) {
@@ -152,9 +156,17 @@ class Bkgd{
 		}
 
 		devStorage.init((items) => {
-			this.#resFunc.config = items.config;
-			this.#resFunc.links = items.links;
-			this.#resFunc.lastVisit = Date.now();
+			let key = Object.keys(items);
+			if(key.length === 1){
+				this.#resFunc.acc = key[0];
+				const { config, links } = items[this.#resFunc.acc];
+				this.#resFunc.links = links['public'];
+				this.#resFunc.config = config
+			}
+			else{
+				this.#resFunc.frameId['currFrame'] = 'account'
+				this.#resFunc.acc = key;
+			}
 		});
 
 		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -171,14 +183,44 @@ class Bkgd{
 		});
 	}
 
+	activateAcc(request, sender, sendResponse){
+		devStorage.view(request.acc, (items) => {
+			this.#resFunc.acc = request.acc;
+			const { links, config } = items[this.#resFunc.acc];
+			this.#resFunc.links = links['public'];
+			this.#resFunc.config = config
+		})
+
+		sendResponse( this.#resFunc.infoConstructor({
+			status: 200
+		}) )
+	}
+
 	frameToggler(request, sender, sendResponse){
 		//send frame to be shown.
-		if(request.reqType === 'set' && request.frameId !== this.#resFunc.frameId.currFrame){
-			let frameId = {'currFrame': request.frameId};
-			frameId['prevFrame'] = this.#resFunc.frameId.currFrame;
-			this.#resFunc.frameId = frameId;
-		} 
+		if(request.reqType === "set"){
+			let frameId = {}
+			if(request.frameId === ""){
+				frameId['currFrame'] = this.#resFunc.frameId.prevFrame;
+				frameId['prevFrame'] = this.#resFunc.frameId.currFrame;
+			}
 
+			else if(request.frameId !== this.#resFunc.frameId.currFrame){
+				frameId['currFrame'] = request.frameId;
+				frameId['prevFrame'] = this.#resFunc.frameId.currFrame;
+			}
+
+			this.#resFunc.frameId = frameId;
+
+			if(frameId.currFrame === "pubMode" || frameId.currFrame === 'privMode'){
+				this.#resFunc.mode = frameId.currFrame === 'privMode' ? 'private' : 'public';
+
+				devStorage.view(this.#resFunc.acc, (items) => {
+					this.#resFunc.links = items[this.#resFunc.acc]['links'][this.#resFunc.mode];
+				})
+			}
+		}
+		
 		sendResponse( this.#resFunc.infoConstructor({
 			status: 200, frameId: this.#resFunc.frameId
 		}));
@@ -198,8 +240,11 @@ class Bkgd{
 		//lastVisit > maxAllowTime should be checked only if password is set
 		//else this is a bug on the condition that it keeps taking you to 
 		//lockPage even though there is not password to compare it to.
-		
-		if(this.#resFunc.config.isLocked || lastVisit > maxAllowTime){
+		let acc = this.#resFunc.acc;
+		if(Array.isArray(acc) && acc.length > 1)
+			msg = { 'status': 100, acc: acc }
+
+		else if(this.#resFunc.config.isLocked || (this.#resFunc.pass !== "" && lastVisit > maxAllowTime)){
 			msg = { status: 401 }
 		} else{
 			this.#resFunc.lastVisit = Date.now();

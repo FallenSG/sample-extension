@@ -25,41 +25,38 @@ function fileDataSetter(file, callback = function(){}){
   xhr.send();
 }
 
-var defConfig = {
-  'config': {
-    'isLocked': false,
-    'password': "",
-    'timeOff': 1
-  },
-  'links': {
-      // 'pubLinks': {},
-      // 'privLinks': {}
-  }
-};
-/*
-  new structure
-  defAcc: {
-    config: { //wants to make *IsLocked redundant
-      pubIsLocked: false, pubPass:"", timeOff: 1
-      privIsLocked: false, privPass: "", timeOff: 1 
-    },
-    pubLinks: {},
-    privLinks: {}
-  }
+// var defConfig = {
+//   'config': {
+//     'isLocked': false,
+//     'password': "",
+//     'timeOff': 1
+//   },
+//   'links': {
+//       // 'pubLinks': {},
+//       // 'privLinks': {}
+//   }
+// };
 
-*/
+var defConfig = {
+  defAcc: {
+    config: { isLocked: false, timeOff: 1, pass: "" },
+    links: {
+      public: {},
+      private: {}
+    }
+  }
+}
+
 var devStorage = {
   init: function(callback = function(){}) {
     var setter = {}
-    chrome.storage.local.get(['config', 'links'], function(items){
+    chrome.storage.local.get(function(items){
       setter = Object.assign({}, items);
 
-      if(!setter.config) setter['config'] = defConfig['config'];
-      if(!setter.links) setter['links'] = defConfig['links'];
-
-      if(setter === items) callback(setter);
-      else if(JSON.stringify(setter) !== "{}")  devStorage.varSet(setter, callback);
-    });
+      if(Object.keys(setter).length)
+        return callback(setter)
+      devStorage.varSet(defConfig, callback)
+    })
   },
 
   fileSet: function(file, callback){
@@ -72,6 +69,18 @@ var devStorage = {
     chrome.storage.local.set(data, function(){
       console.log({msg: "Data set Complete", dataVal: data});
       callback(data);
+    });
+  },
+
+  updateSet: function(acc, mode, data, callback = function(){}){
+    chrome.storage.local.get(function(items){
+      setter = Object.assign({}, items);
+
+      for(key in data){
+        setter[acc][mode][key] = data[key];
+      }
+
+      devStorage.varSet(setter, callback);
     });
   },
 
@@ -94,11 +103,12 @@ var devStorage = {
     chrome.storage.local.clear(callback());
   },
 
-  view: function(data){
+  view: function(data, callback=function(){}){
     //Purpose: takes an array of "key" values and fetches data
     //  in that "key" values from local storage and display it.
     chrome.storage.local.get(data, function(items){
       console.log({msg: "Data Fetch Complete", dataVal: items});
+      callback(items);
     });
   },
 

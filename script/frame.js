@@ -25,7 +25,7 @@ var frame = {
             frame[btnId]();
         }
 
-        else if(btnId === 'lockPage' || btnId === 'pubMode' || btnId ==='settingBtn' || btnId === "editPage"){
+        else if(btnId === 'privMode' || btnId === 'pubMode' || btnId ==='settingBtn' || btnId === "editPage"){
             frame.postMsg(btnId);
         }
 
