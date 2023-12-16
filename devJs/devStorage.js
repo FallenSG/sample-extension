@@ -25,18 +25,6 @@ function fileDataSetter(file, callback = function(){}){
   xhr.send();
 }
 
-// var defConfig = {
-//   'config': {
-//     'isLocked': false,
-//     'password': "",
-//     'timeOff': 1
-//   },
-//   'links': {
-//       // 'pubLinks': {},
-//       // 'privLinks': {}
-//   }
-// };
-
 var defConfig = {
   defAcc: {
     config: { isLocked: false, timeOff: 1, pass: "" },
@@ -77,26 +65,54 @@ var devStorage = {
       setter = Object.assign({}, items);
 
       for(key in data){
-        setter[acc][mode][key] = data[key];
+        if(key === 'links')
+          setter[acc][key][mode] = data[key];
+        else 
+          setter[acc][key] = data[key];
       }
 
       devStorage.varSet(setter, callback);
     });
   },
 
-  purge: function(data, callback){
+  renameAcc: function(acc, name, callback = () => {}){
+    chrome.storage.local.get((items) => {
+      let keys = Object.keys(items);
+      let counter=0;
+      while (keys.includes(name)){
+        counter++;
+        name = `${name}${counter}`;
+      }
+
+      items[name] = Object.assign({}, items[acc]);
+
+      var setter = Object.assign({}, items);
+      chrome.storage.local.set(setter, () => this.accPurge(acc, callback));
+    })
+  },
+
+  purge: function(acc, data, callback){
     //Purpose: takes an array of "key" values and remove them from
     //  local storage.
-    var config = {};
-    if(data.length === 0){
-      config = defConfig;
-    } else{
-      for(key of data){
-        if(key in defConfig) config[key] = defConfig[key];
+    chrome.storage.local.get((items) => {
+      if(data.length === 0)
+        items[acc] = defConfig['defAcc'];
+      // else if(data[0] === 'acc')
+      //   delete items[acc];
+      else{
+        if(data[0] === 'config')
+          items[acc]['config'] = defConfig['defAcc']['config'];
+        else{
+          items[acc]['links'][data[1]] = defConfig['defAcc']['links'][data[1]];
+        }
       }
-    }
 
-    devStorage.varSet(config, callback);
+      devStorage.varSet(items, callback);
+    })
+  },
+
+  accPurge: function(acc, callback = ()=>{}){
+    chrome.storage.local.remove(acc, callback);
   },
 
   purgeAll: function(callback = function(){}){
@@ -111,55 +127,6 @@ var devStorage = {
       callback(items);
     });
   },
-
-  rename: function(links, keyVal, updLink){
-    //link renaming
-    for(key in updLink){
-      for(index in updLink[key]){
-        links[key][index][0] = updLink[key][index]
-      }
-    }
-
-    //link renaming end
-
-    //renaming windowName
-    for(oldKey in keyVal){
-      let newKey = keyVal[oldKey]
-
-      let counter = 0, fname = newKey;
-      while (fname in links) {
-        counter++;
-        fname = `${newKey}${counter}`;
-      }
-      newKey = fname;
-
-      links[newKey] = links[oldKey]
-      delete links[oldKey]; 
-    }
-    //windowName renaming ends here
-
-    devStorage.varSet({ 'links': links });
-  },
-
-  deleteWindow: function(links, keyVal){
-    keyVal.forEach((key) => {
-      if(key in links){
-        delete links[key];
-      }
-    })
-
-    devStorage.varSet({ "links": links })
-  },
-
-  delLink: function(links, data){
-    let elem = data.split('_');
-    delete links[elem[0]][elem[1]];
-
-    if(Object.keys(links[elem[0]]).length === 0)
-      delete links[elem[0]]
-
-    devStorage.varSet({ "links": links })
-  }
 }
 
 

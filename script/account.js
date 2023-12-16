@@ -14,9 +14,8 @@ function getRandomColor() {
 
 var account = {
     init: function(){
-        chrome.runtime.sendMessage({ fn: "getStatus" }, (resp) => {
-            if(resp.status === 100)
-                account.displaySetter(resp.acc);
+        chrome.runtime.sendMessage({ fn: "fetchAcc", origin: "account" }, (resp) => {
+            account.displaySetter(resp.acc);
         })
     },
 

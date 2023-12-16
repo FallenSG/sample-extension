@@ -21,7 +21,7 @@ class Bkgd{
 			var msg = msgFormat;
 			//required fields
 			msg.mode = this.frameId.currFrame;
-			msg.passSet = this.config.password === '';
+			msg.passSet = this.config.pass === '';
 			msg.timeStamp = this.lastVisit;
 
 			for (let key in keyVal) {
@@ -35,7 +35,7 @@ class Bkgd{
 			let code = 401;
 
 			hasher(request.pass).then((hash) => {
-				if(hash === this.config.password) code = 200;
+				if(hash === this.config.pass) code = 200;
 				
 				sendResponse( this.infoConstructor({
 					status: code
@@ -43,30 +43,54 @@ class Bkgd{
 			});
 		},
 
+		isPassReq: function(request, sender, sendResponse){
+			var passReq = false;
+			if(this.config.pass !== ""){
+				passReq = true;
+			}
+			sendResponse( this.infoConstructor({
+				passReq
+			}) );
+		},
+
 		purgeReq: function(request, sender, sendResponse){
-			devStorage.purge(request.data, (items) => {
+			devStorage.purge(this.acc, request.data, (items) => {
 				if(items.links) this.links = items.links;
 				if(items.config) this.config = items.config;
 			});
+		},
+
+		deleteAcc: function(request, sender, sendResponse){
+			devStorage.accPurge(this.acc, () => {
+				sendResponse(this.infoConstructor({
+					status: 200
+				}))
+			})
 		},
 
 		changeConfig: function(request, sender, sendResponse){
 			return new Promise( (resolve, reject) => {
 				if(request.type === 'setPass' || request.type === 'changePass'){
 					hasher(request.val).then((hash) => {
-						this.config['password'] = hash;
+						this.config['pass'] = hash;
 						this.config['isLocked'] = true;
 						resolve(this.config);
 					});
 				}
 
 				else if(request.type === 'removePass'){
-					this.config['password'] = '';
+					this.config['pass'] = '';
 					this.config['isLocked'] = false;
 					resolve(this.config);
 				}
 			}).then(result => {
-				devStorage.varSet({'config': result});
+				devStorage.updateSet(this.acc, this.mode, {'config': result});
+			});
+		},
+
+		renameAcc: function(request, sender, sendResponse){
+			devStorage.renameAcc(this.acc, request.name, () => {
+				this.acc = request.name
 			});
 		},
 
@@ -125,17 +149,53 @@ class Bkgd{
 		},
 
 		renameLinks: function(request, sender, sendResponse){
-			devStorage.rename(this.links, request.keyVal, request.updLink)
+			var {keyVal, updLink, ...others } = request;
+			
+			for (let key in updLink) {
+				for (let index in updLink[key]) {
+					this.links[key][index][0] = updLink[key][index]
+				}
+			}
+			//link renaming end
+
+			//renaming windowName
+			for (let oldKey in keyVal) {
+				let newKey = keyVal[oldKey]
+
+				let counter = 0, fname = newKey;
+				while (fname in this.links) {
+					counter++;
+					fname = `${newKey}${counter}`;
+				}
+				newKey = fname;
+
+				this.links[newKey] = this.links[oldKey]
+				delete this.links[oldKey];
+			}
+
+			devStorage.updateSet(this.acc, this.mode, { 'links': this.links });
+			// devStorage.rename(this.acc, this.mode, this.links, request.keyVal, request.updLink)
 			sendResponse({ status: 200 })
 		},
 
 		deleteWindow: function(request, sender, sendResponse){
-			devStorage.deleteWindow(this.links, request.keyVal)
+			request.keyVal.forEach((key) => {
+				if(key in this.links){
+					delete this.links[key];
+				}
+			})
+			devStorage.updateSet(this.acc, this.mode, { 'links': this.links });
 			sendResponse({ status: 200 });
 		},
 
 		delLink: function(request, sender, sendResponse){
-			devStorage.delLink(this.links, request.data);
+			var [windowName, linkName] = request.data.split('_');
+			delete this.links[windowName][linkName];
+
+			if(Object.keys(this.links[windowName]).length === 0 )
+				delete this.links[windowName];
+
+			devStorage.updateSet(this.acc, this.mode, {'links': this.links} );
 			sendResponse({ status: 200 });
 		}
 	}
@@ -181,6 +241,21 @@ class Bkgd{
 			}
 			return true; //meant for keeping msging port open even in case of async functions.
 		});
+	}
+
+	fetchAcc(request, sender, sendResponse){
+		if(request.origin === 'setting')
+			sendResponse(this.#resFunc.infoConstructor({
+				acc: this.#resFunc.acc
+			}));
+		else{
+			devStorage.view(null, (items) => {
+				let keys = Object.keys(items);
+				sendResponse(this.#resFunc.infoConstructor({
+					acc: keys
+				}))
+			})
+		}
 	}
 
 	activateAcc(request, sender, sendResponse){
@@ -237,9 +312,9 @@ class Bkgd{
 		let maxAllowTime = this.#resFunc.config.timeOff * 60;
 
 		//below if statement needs correction in the form that
-		//lastVisit > maxAllowTime should be checked only if password is set
+		//lastVisit > maxAllowTime should be checked only if pass is set
 		//else this is a bug on the condition that it keeps taking you to 
-		//lockPage even though there is not password to compare it to.
+		//lockPage even though there is not pass to compare it to.
 		let acc = this.#resFunc.acc;
 		if(Array.isArray(acc) && acc.length > 1)
 			msg = { 'status': 100, acc: acc }
@@ -260,7 +335,7 @@ class Bkgd{
 		else {
 			let statusCode = 401;
 		  	hasher(request.pass).then((hash) => {
-				if(hash === this.#resFunc.config.password){
+				if(hash === this.#resFunc.config.pass){
 					this.#resFunc.config.isLocked = false;
 					statusCode = 200;
 					//set timestamp of when unlocked.

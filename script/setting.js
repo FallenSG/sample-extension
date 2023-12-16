@@ -2,37 +2,58 @@
 
 var settingMenu = {
   'closeBtn': { 'name': '&times;' },
-  'linksPrtSetting': { 'name': 'Links Setting', 'childBtn': {
-    'downloadLinks': { 'name': 'Download Links' },
-    'initLinksPurge': { 'name': 'Clear Links' }
+  'renameAcc': { 'name': "Rename Account" },
+  'links_PrtSetting': { 'name': 'Links Setting', 'childBtn': {
+    'links_download': { 'name': 'Download Links' },
+    'public_purge': { 'name': 'Clear Public Links' },
+    'private_purge': { 'name': 'Clear Private Links' }
   }},
   
-  'configPrtSetting': { 'name': 'Config Setting', 'childBtn': {
-    'downloadConfig': { 'name': 'Download Config' },
-    'initConfPurge': { 'name': 'Clear Config' }
+  'config_PrtSetting': { 'name': 'Config Setting', 'childBtn': {
+    'config_download': { 'name': 'Download Config' },
+    'config_purge': { 'name': 'Clear Config' }
   }}, 
   
-  'initPurgeAll': { 'name': 'Purge All Data', 'prop': { 'mode': 'privMode' } },
-
-  'passPrtSetting': { 'name': 'Password Setting', 'prop': {'mode': 'privMode'}, 'childBtn': {
-    'setPass': { 'name': 'Set Password', 'prop': { 'passSet': true } },
-    'changePass': { 'name': 'Change Password', 'prop': { 'passSet': false } },
-    'removePass': { 'name': 'Remove Password', 'prop': { 'passSet': false } }
+  
+  'pass_PrtSetting': { 'name': 'Password Setting', 'childBtn': {
+    'setPass': { 'name': 'Set Password', 'prop': { 'passReq': false } },
+    'changePass': { 'name': 'Change Password', 'prop': { 'passReq': true } },
+    'removePass': { 'name': 'Remove Password', 'prop': { 'passReq': true } }
   }},
-  'addBtn': { 'name': 'Add Links' }
+  //'addBtn': { 'name': 'Add Links' },
+  'all_purge': { 'name': 'Reset Account' },
+  'accPurge': { 'name': "Delete Account" }
   //'devMode': {'name': 'Developer Mode'}
 };
 
 class setting {
   #resFunc = {
     origFrame: "",
+    passReq: false,
 
-    toggleDispStyle: function(elem) { 
-      let element = document.getElementById(elem);
-      let dispStyle = 'block';
+    passCheck: async function(askConf=false, callback = () => {}){
+      return new Promise((resolve, reject) => {
+        if(this.passReq){
+          var pass = prompt("Enter Password to continue: ");
 
-      if(element.style.display === 'block') dispStyle = 'none';
-      element.style.display = dispStyle;
+          if (pass !== null) {
+            // resolve();
+            chrome.runtime.sendMessage({ fn: "passCheck", pass }).then((resp) => {
+              if (resp.status === 401)
+                return alert("Wrong Password");
+              resolve();
+            })
+          }
+        }
+
+        else if (askConf) {
+          var conf = confirm("Do you wish to continue: ")
+          if (conf) resolve();
+        }
+
+        else 
+          resolve();
+      });
     },
 
     setPass: function () {
@@ -58,73 +79,67 @@ class setting {
     },
 
     changePass: function () {
-      var pass = prompt("Enter Current Password");
-      chrome.runtime.sendMessage({ fn: "passCheck", pass: pass }, (response) => {
-        if (response.status === 401) {
-          alert("Wrong Password");
-          return;
-        }
-
+      this.passCheck().then(() =>  {
         let newPass = prompt("Enter Your New Password");
         chrome.runtime.sendMessage({ fn: "changeConfig", type: "changePass", val: newPass });
-      });
+      })
     },
 
     removePass: function () {
-      var pass = prompt("Enter Your Password");
-      chrome.runtime.sendMessage({ fn: "passCheck", pass: pass }, (response) => {
-        if (response.status === 401) {
-          alert("Wrong Password");
-          return;
+      this.passCheck().then(() => {
+        chrome.runtime.sendMessage({ fn: "changeConfig", type: "removePass" });
+      })
+    },
+
+    download: function(data){
+      this.passCheck().then(() => {
+        chrome.runtime.sendMessage({ fn: "fetchAcc", origin: "setting" }, (resp) => {
+          var acc = resp.acc;
+          chrome.storage.local.get([acc], (items) => {
+            var blob = new Blob([JSON.stringify({ 'data': items[acc][data] })], { type: "text/json" });
+            var url = URL.createObjectURL(blob);
+
+            chrome.downloads.download({ url: url });
+          })
+        })
+      })
+    },
+
+    purge: function(data){
+      this.passCheck(true).then(() => {
+        var toBePurged = [];
+
+        if(data === 'config')
+          toBePurged.push('config');
+        else if(data !== 'all'){
+          toBePurged.push('links');
+          toBePurged.push(data);
         }
 
-        chrome.runtime.sendMessage({ fn: "changeConfig", type: "removePass" });
-      });
+        chrome.runtime.sendMessage({ fn: "purgeReq", data: toBePurged }, (resp) => {
+          
+        });
+      })
     },
 
-    downloadLinks: function () {
-      chrome.storage.local.get(['links'], function (items) {
-        var blob = new Blob([JSON.stringify({ 'links': items.links })], { type: "text/json" });
-        var url = URL.createObjectURL(blob);
-
-        chrome.downloads.download({ url: url });
-      });
+    accPurge: function(){
+      //to be completed
+      this.passCheck(true).then(() => {
+        chrome.runtime.sendMessage({ fn: 'deleteAcc' }, (resp) => {
+          var message = JSON.stringify({
+            'frameId': 'account'
+            //,
+          });
+          window.parent.postMessage(message, '*');
+        });
+      })
     },
 
-    downloadConfig: function () {
-      chrome.storage.local.get(['config'], function (items) {
-        var blob = new Blob([JSON.stringify({ 'config': items.config })], { type: "text/json" });
-        var url = URL.createObjectURL(blob);
-
-        chrome.downloads.download({ url: url });
-      });
-    },
-
-    initPurgeAll: function () {
-      var conf = confirm("Do you wish to Continue");
-      if (conf) chrome.runtime.sendMessage({ fn: "purgeReq", data: [] });
-    },
-
-    initConfPurge: function () {
-      var conf = confirm("Do you wish to Continue");
-      if (conf) chrome.runtime.sendMessage({ fn: "purgeReq", data: ['config'] });
-    },
-
-    initLinksPurge: function () {
-      var conf = confirm("Do you wish to Continue");
-      if (conf) chrome.runtime.sendMessage({ fn: "purgeReq", data: ['links'] });
-    },
-
-    linksPrtSetting: function() {
-      this.toggleDispStyle('linksPrtSettingDiv');
-    }, 
-    
-    configPrtSetting: function() {
-      this.toggleDispStyle('configPrtSettingDiv');
-    }, 
-    
-    passPrtSetting: function() {
-      this.toggleDispStyle('passPrtSettingDiv');
+    renameAcc: function(){
+      var name = prompt("Enter a new username: ")
+      if(name !== null){
+        chrome.runtime.sendMessage({ fn: "renameAcc", name });
+      }
     },
 
     displaySetter: function (reqProp) {
@@ -173,7 +188,21 @@ class setting {
   constructor() {
     document.addEventListener('click', (PointerEvent) => {
       let fn = PointerEvent.target.id;
-      if (fn in this.#resFunc) {
+      let [ forePart, subPart ] = fn.split('_');
+
+      if(subPart === 'PrtSetting'){
+        let element = document.getElementById(fn + 'Div');
+        let dispStyle = 'block';
+
+        if (element.style.display === 'block') dispStyle = 'none';
+        element.style.display = dispStyle;
+      }
+
+      else if(subPart){
+        this.#resFunc[subPart](forePart);
+      }
+
+      else if (fn in this.#resFunc) {
         this.#resFunc[fn]();
       }
     });
@@ -184,10 +213,15 @@ class setting {
     });
 
     chrome.runtime.sendMessage({fn: 'getStatus'}, (response) => {
-      // if(response.status === 401){}
-      // else if(response.status === 200){
-        this.#resFunc.displaySetter(response);
-      // }
+      if(response.status === 401){
+
+      }
+      else if(response.status === 200){
+        chrome.runtime.sendMessage({ fn: "isPassReq" }, (resp) => {
+          this.#resFunc.passReq = resp.passReq;
+          this.#resFunc.displaySetter(resp);
+        })
+      }
     });
   }
 }
