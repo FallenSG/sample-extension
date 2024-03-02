@@ -217,7 +217,7 @@ class setting {
 
       }
       else if(response.status === 200){
-        chrome.runtime.sendMessage({ fn: "isPassReq" }, (resp) => {
+        chrome.runtime.sendMessage({ fn: 'isPassReq' }, (resp) => {
           this.#resFunc.passReq = resp.passReq;
           this.#resFunc.displaySetter(resp);
         })

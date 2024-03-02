@@ -14,7 +14,7 @@ class Bkgd{
 		mode: "public",
 		links: {},
 		config: {},
-		lastVisit: 0,
+		timeStamp: 0,
 		parentTab: null,
 
 		infoConstructor: function(keyVal) {
@@ -22,7 +22,7 @@ class Bkgd{
 			//required fields
 			msg.mode = this.frameId.currFrame;
 			msg.passSet = this.config.pass === '';
-			msg.timeStamp = this.lastVisit;
+			msg.timeStamp = this.timeStamp;
 
 			for (let key in keyVal) {
 				msg[key] = keyVal[key];
@@ -85,6 +85,7 @@ class Bkgd{
 				}
 			}).then(result => {
 				devStorage.updateSet(this.acc, this.mode, {'config': result});
+				// this.config['isLocked'] = false;
 			});
 		},
 
@@ -107,7 +108,11 @@ class Bkgd{
 		saveLinks: function(request, sender, sendResponse) {
 			//callStack: saveAll/fastSave(setting.js).
 			//Purpose: to execute the saveLinks(devTab) function for saving links.
-			devTab.saveLinks(this.links, request.reqType);
+			devTab.saveLinksNew(this.acc, request.reqType);
+		},
+		
+		saveSingle: function(request, sender, sendResponse){
+			devTab.saveSingle(this.acc, request.reqType, request.val);
 		},
 
 		tabCreation: function(request, sender, sendResponse){
@@ -136,16 +141,6 @@ class Bkgd{
 				console.log(err);
 			}
 
-		},
-
-		isTabActive: function(request, sender, sendResponse){
-			chrome.windows.getAll({ populate: true }, (windows_list) => {
-				windows_list.forEach((window) => {
-					if(window.id !== this.parentTab) 
-						sendResponse(this.infoConstructor({ activeTab: true }))
-				})
-				sendResponse(this.infoConstructor({ activeTab: false }));
-			});
 		},
 
 		renameLinks: function(request, sender, sendResponse){
@@ -197,6 +192,17 @@ class Bkgd{
 
 			devStorage.updateSet(this.acc, this.mode, {'links': this.links} );
 			sendResponse({ status: 200 });
+		},
+
+		signOut: function(request, sender, sendResponse){
+			this.acc = "";
+			this.mode = "public";
+			this.links = {};
+			this.config = {};
+
+			sendResponse(this.infoConstructor({
+				status: 200
+			}));
 		}
 	}
 
@@ -210,7 +216,7 @@ class Bkgd{
 		//Also acts as listener for any messages and executes function
 
 		try {
-			importScripts('/devJs/devStorage.js', '/devJs/devTab.js', '/script/msgFormat.js', 'exten_script.js');
+			importScripts('/devJs/devStorage.js', '/devJs/devTab.js', '/script/msgFormat.js', '/devJs/crypt.js');
 		} catch (e) {
 			console.error(e);
 		}
@@ -232,7 +238,11 @@ class Bkgd{
 		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			let proto = Object.getPrototypeOf(this);
 
-			if(request.fn in this.#resFunc && !this.#resFunc.config.isLocked){
+			if(request.fn === 'signOut'){
+				this.#resFunc['signOut'](request, sender, sendResponse);
+			}
+
+			else if(request.fn in this.#resFunc && !this.#resFunc.config.isLocked){
 				this.#resFunc[request.fn](request, sender, sendResponse);
 			}
 
@@ -308,21 +318,18 @@ class Bkgd{
 		//also need to send frame to be displayed.
 		//additonal if statement for checking time limit 
 		let msg = {};
-		let lastVisit = Date.now() - this.#resFunc.timeStamp;
+		let lastVisit = Date.now() - this.#resFunc?.timeStamp;
 		let maxAllowTime = this.#resFunc.config.timeOff * 60;
 
 		//below if statement needs correction in the form that
 		//lastVisit > maxAllowTime should be checked only if pass is set
 		//else this is a bug on the condition that it keeps taking you to 
 		//lockPage even though there is not pass to compare it to.
-		let acc = this.#resFunc.acc;
-		if(Array.isArray(acc) && acc.length > 1)
-			msg = { 'status': 100, acc: acc }
 
-		else if(this.#resFunc.config.isLocked || (this.#resFunc.pass !== "" && lastVisit > maxAllowTime)){
+		if(this.#resFunc.config.isLocked && this.#resFunc.config.pass !== "" && lastVisit > maxAllowTime){
 			msg = { status: 401 }
 		} else{
-			this.#resFunc.lastVisit = Date.now();
+			this.#resFunc.timeStamp = Date.now();
 			let keyVal = Object.keys(this.#resFunc.links);
 			msg = { 'status': 200, 'keyVal': keyVal };
 		}

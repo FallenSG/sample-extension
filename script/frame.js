@@ -36,24 +36,10 @@ var frame = {
         }
 
         else if(btnId === "save"){
-            var dlgIp = ""
-            var dialog = document.getElementById('dialogBox')
-            dialog.show();
-
-            document.getElementById("dlgBtn").onclick = function(){
-                console
-                chrome.runtime.sendMessag({ fn: "isTabActive" }, function(resp){
-                    console.log(resp.activeTab);
-                });
-                // dialog.close();
-                // dlgIp = document.getElementById('dlgIp');
-                // console.log(dlgIp);
-            }
-            
+            chrome.runtime.sendMessage({ fn: "saveSingle", reqType: 'save' });
         }
 
         else if(btnId === "saveColl"){
-
         }
     },
 
@@ -96,6 +82,12 @@ var frame = {
         document.getElementById('container').innerHTML = 'Let Get Started !!!';
     },
 
+    SignOutBtn: function(){
+        chrome.runtime.sendMessage({ fn: "signOut" }, (resp) => {
+            this.postMsg("account")
+        })
+    },
+
     displayLinks: function(){
         let sel = document.getElementById('windowKey');
         let val = sel.options[sel.selectedIndex].value;
@@ -121,6 +113,10 @@ var frame = {
         });
     }
 };
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    sendResponse({ val: "sent" })
+})
 
 window.addEventListener('message', () => {}); //if needed.
 document.addEventListener('DOMContentLoaded', frame.init);

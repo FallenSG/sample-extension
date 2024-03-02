@@ -30,7 +30,7 @@ var devTab = {
     });
   },
 
-  saveLinks: function(links, reqType){
+  saveLinks: function(links, reqType, val){
     chrome.windows.getAll({populate: true}, function(windows_list){
       windows_list.forEach(function(window){
 
@@ -75,14 +75,69 @@ var devTab = {
     });
   },
 
-  saveLinksNew: function(links, reqType){
-    //also needs to check mode type for changing the type of windows scoured through
-    if(reqType === 'save'){
-      chrome.window.getCurrent({});
-    }
+  saveLinksNew: async function(links, acc, reqType, sendResponse){
+    const parentWindow = await chrome.windows.getCurrent();
+    chrome.windows.getAll({ populate: true }, function(windows_list){
+      windows_list.forEach((window) => {
+        let nameArr = [];
+        if(parentWindow.id !== window.id){
+          let key, tempLinks = {}, nameLinks = "";
+          window.tabs.forEach(function(tab){
+            let tabId = generateUniqueID()
+            while (tempLinks[tabId])
+              tabId = generateUniqueID()
 
-    else{
-      chrome.window.getAll({});
+            tempLinks[tabId] = [tab.title, tab.url];
+            nameLinks += tab.title + "\n";
+          })
+
+          if (window.id in devTab.browseWindow) key = devTab.browseWindow[window.id];
+          else if(reqType === 'fastSave'){
+            key = randomWordGenerator();
+            
+            let counter = 0, fname = key;
+            while (fname in links) {
+              counter++;
+              fname = `${key}${counter}`;
+            }
+            key = fname;
+          }
+        }
+      })
+    })
+  },
+
+  saveSingle: function(acc, reqType, sendResponse){
+    links = {
+      'public': {},
+      'private': {}
     }
+    mode = 'public';
+    
+    chrome.windows.getCurrent({populate: true}, (window) => {
+      let tempLinks = {};
+      if(!(window.id in devTab.browseWindow))
+        sendResponse({ status: 200  });
+
+
+      window.tabs.forEach((tab) => {
+        let tabId = generateUniqueID()
+        while(tempLinks[tabId])
+          tabId = generateUniqueID()
+        tempLinks[tabId] = [tab.title, tab.url];
+      })
+
+      if (window.id in devTab.browseWindow) val = devTab.browseWindow[window.id];
+      else{
+        mode = window.incognito ? 'private' : 'public';
+        if(val !== "")
+          val = randomWordGenerator()
+      }
+
+      links[mode][val] = tempLinks;
+      
+      chrome.windows.remove(window.id);
+      devStorage.addSet(acc, links);
+    })
   }
 }

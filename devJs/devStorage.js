@@ -60,6 +60,25 @@ var devStorage = {
     });
   },
 
+  addSet: function(acc, data, callback= function(){}){
+    chrome.storage.local.get(function(items){
+      for(mode in data){
+        for(key in data[mode]){
+          let itemArr = items[acc]['links'][mode]
+          let dataArr = data[mode][key]
+
+          if(key in itemArr){
+            itemArr[key] = { ...itemArr[key], ...dataArr };
+          }
+          else{
+            itemArr[key] = dataArr;
+          }
+        }
+      }
+      devStorage.varSet(items, callback);
+    })
+  },
+
   updateSet: function(acc, mode, data, callback = function(){}){
     chrome.storage.local.get(function(items){
       setter = Object.assign({}, items);
@@ -129,11 +148,6 @@ var devStorage = {
   },
 }
 
-
-var workConfig = {
-  'isLocked': true,
-  'password': 'fallen'
-}
 // devStorage.purgeAll();
 // devStorage.fileSet('/links.json');
 // devStorage.varSet({config: workConfig});
